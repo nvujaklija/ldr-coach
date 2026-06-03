@@ -2,6 +2,8 @@
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
+from app.schemas.couple import CoupleOut
+
 
 class UserRegister(BaseModel):
     email: EmailStr
@@ -25,3 +27,9 @@ class UserOut(BaseModel):
     id: str
     email: EmailStr
     display_name: str
+
+
+class MeOut(UserOut):
+    """The current user plus their couple (null until they onboard)."""
+
+    couple: CoupleOut | None = None
