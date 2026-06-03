@@ -35,3 +35,21 @@ def client() -> Generator[TestClient, None, None]:
     with TestClient(app) as c:
         yield c
     app.dependency_overrides.clear()
+
+
+def register_and_login(client: TestClient, email: str, display_name: str) -> dict[str, str]:
+    """Register a fresh user, log in, and return Authorization headers."""
+    client.post(
+        "/api/auth/register",
+        json={"email": email, "password": "supersecret", "display_name": display_name},
+    )
+    token = client.post(
+        "/api/auth/login", data={"username": email, "password": "supersecret"}
+    ).json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture
+def auth_headers(client: TestClient) -> dict[str, str]:
+    """Authorization headers for a default logged-in user (Alex)."""
+    return register_and_login(client, "alex@example.com", "Alex")
