@@ -1,0 +1,29 @@
+# Local-development overrides, auto-merged by `docker compose up`.
+# Enables hot-reload by bind-mounting source and running the dev servers.
+# For a production-style run, use:  docker compose -f docker-compose.yml up
+
+services:
+  backend:
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    environment:
+      ENV: development
+    volumes:
+      - ./backend:/app
+    # Expose the API directly for debugging (also reachable via the proxy).
+    ports:
+      - "8000:8000"
+
+  frontend:
+    command: sh -c "npm install && npm run dev"
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: /api
+      WATCHPACK_POLLING: "true"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - "3000:3000"
