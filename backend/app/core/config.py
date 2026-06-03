@@ -5,8 +5,10 @@ dev-friendly only — production MUST override JWT_SECRET and DATABASE_URL
 via real environment variables (see .env.example).
 """
 
+from typing import Annotated
+
 from pydantic import field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -24,8 +26,13 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRE_MINUTES: int = 60 * 24
 
-    # CORS — comma-separated list of allowed origins
-    CORS_ORIGINS: list[str] = ["http://localhost", "http://localhost:3000"]
+    # CORS — comma-separated list of allowed origins. NoDecode stops
+    # pydantic-settings from JSON-parsing the env value so the validator
+    # below can split a plain "a,b,c" string.
+    CORS_ORIGINS: Annotated[list[str], NoDecode] = [
+        "http://localhost",
+        "http://localhost:3000",
+    ]
 
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
