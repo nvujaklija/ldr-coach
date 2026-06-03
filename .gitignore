@@ -167,3 +167,7 @@ venv/
 htmlcov/
 .coverage
 .coverage.*
+
+# Local SQLite dev databases
+*.db
+*.sqlite3
