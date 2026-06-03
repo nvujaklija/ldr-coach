@@ -117,3 +117,68 @@ export async function loginUser(email: string, password: string): Promise<string
 export async function getMe(): Promise<User> {
   return apiFetch<User>("/auth/me");
 }
+
+// --- visits --------------------------------------------------------------
+export interface Visit {
+  id: string;
+  location: string;
+  start_date: string; // ISO date (YYYY-MM-DD)
+  end_date: string | null;
+  notes: string | null;
+  status: "planned" | "completed" | "cancelled";
+  days_until: number | null;
+}
+
+export interface VisitInput {
+  location: string;
+  start_date: string;
+  end_date?: string | null;
+  notes?: string | null;
+}
+
+export async function getNextVisit(): Promise<Visit | null> {
+  return apiFetch<Visit | null>("/visits/next");
+}
+
+export async function createVisit(input: VisitInput): Promise<Visit> {
+  return apiFetch<Visit>("/visits", { method: "POST", body: input });
+}
+
+export async function updateVisit(
+  id: string,
+  patch: Partial<VisitInput & { status: Visit["status"] }>,
+): Promise<Visit> {
+  return apiFetch<Visit>(`/visits/${id}`, { method: "PATCH", body: patch });
+}
+
+// --- milestones ----------------------------------------------------------
+export interface Milestone {
+  id: string;
+  visit_id: string | null;
+  title: string;
+  status: "todo" | "done";
+  due_date: string | null;
+  notes: string | null;
+}
+
+export async function listMilestones(visitId?: string): Promise<Milestone[]> {
+  const query = visitId ? `?visitId=${encodeURIComponent(visitId)}` : "";
+  return apiFetch<Milestone[]>(`/milestones${query}`);
+}
+
+export async function createMilestone(
+  title: string,
+  visitId?: string | null,
+): Promise<Milestone> {
+  return apiFetch<Milestone>("/milestones", {
+    method: "POST",
+    body: { title, visit_id: visitId ?? null },
+  });
+}
+
+export async function updateMilestone(
+  id: string,
+  patch: Partial<{ title: string; status: Milestone["status"] }>,
+): Promise<Milestone> {
+  return apiFetch<Milestone>(`/milestones/${id}`, { method: "PATCH", body: patch });
+}
