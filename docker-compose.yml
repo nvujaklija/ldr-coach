@@ -35,6 +35,25 @@ services:
     networks:
       - ldr
 
+  # Long-running reminder worker: polls for due reminders (visits, rituals)
+  # and writes in-app notifications. Shares the backend image and config but
+  # runs outside the request/response cycle. The backend applies migrations on
+  # startup; the worker tolerates a not-yet-migrated DB and retries.
+  worker:
+    build: ./backend
+    command: ["python", "-m", "app.worker"]
+    environment:
+      ENV: ${ENV:-production}
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      NOTIFICATIONS_POLL_SECONDS: ${NOTIFICATIONS_POLL_SECONDS:-60}
+      VISIT_REMINDER_DEFAULT_DAYS: ${VISIT_REMINDER_DEFAULT_DAYS:-3}
+      EMAIL_ENABLED: ${EMAIL_ENABLED:-false}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - ldr
+
   frontend:
     build: ./frontend
     environment:

@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.models import Milestone, Visit
 from app.schemas.milestone import MilestoneCreate
+from app.services import memories as memory_service
 
 
 def list_for_couple(db: Session, couple_id: str, visit_id: str | None = None) -> list[Milestone]:
@@ -43,8 +44,16 @@ def get_owned_milestone(db: Session, milestone_id: str, couple_id: str) -> Miles
 
 
 def apply_update(db: Session, milestone: Milestone, data: dict) -> Milestone:
+    """Persist a validated partial update onto ``milestone``.
+
+    Checking a milestone off for the first time records a timeline memory in
+    the same transaction as the state change.
+    """
+    was_done = milestone.status == "done"
     for field, value in data.items():
         setattr(milestone, field, value)
+    if milestone.status == "done" and not was_done:
+        memory_service.record_milestone_done(db, milestone)
     db.commit()
     db.refresh(milestone)
     return milestone

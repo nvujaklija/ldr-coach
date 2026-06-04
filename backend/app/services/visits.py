@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from app.models import Visit
 from app.schemas.visit import VisitCreate, VisitOut
+from app.services import memories as memory_service
 
 
 def to_out(visit: Visit) -> VisitOut:
@@ -54,9 +55,16 @@ def create_visit(db: Session, couple_id: str, payload: VisitCreate) -> Visit:
 
 
 def apply_update(db: Session, visit: Visit, data: dict) -> Visit:
-    """Persist a validated partial update onto ``visit``."""
+    """Persist a validated partial update onto ``visit``.
+
+    A visit reaching "completed" for the first time is recorded on the
+    couple's memory timeline in the same transaction as the state change.
+    """
+    was_completed = visit.status == "completed"
     for field, value in data.items():
         setattr(visit, field, value)
+    if visit.status == "completed" and not was_completed:
+        memory_service.record_visit_completed(db, visit)
     db.commit()
     db.refresh(visit)
     return visit

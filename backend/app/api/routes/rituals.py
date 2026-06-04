@@ -23,6 +23,7 @@ from app.schemas.ritual import (
     RitualTemplateOut,
     RitualUpdate,
 )
+from app.services import memories as memory_service
 from app.services import rituals as ritual_service
 
 router = APIRouter(prefix="/rituals", tags=["rituals"])
@@ -131,9 +132,13 @@ def update_instance(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Ritual occurrence not found"
         )
+    was_done = instance.status == "done"
     instance.status = payload.status
     if payload.status == "done":
         instance.completed_at = datetime.now(UTC)
+        # A completed occurrence becomes a shared memory (once per occurrence).
+        if not was_done:
+            memory_service.record_ritual_done(db, ritual, instance)
     db.commit()
     # Completing/cancelling this occurrence rolls the schedule forward to the
     # next one via _to_out -> ensure_next_instance.

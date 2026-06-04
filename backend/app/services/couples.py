@@ -42,6 +42,21 @@ def member_user_ids(db: Session, couple_id: str) -> list[str]:
     return list(db.scalars(select(CoupleMember.user_id).where(CoupleMember.couple_id == couple_id)))
 
 
+def list_members(db: Session, couple_id: str) -> list[CoupleMember]:
+    return list(db.scalars(select(CoupleMember).where(CoupleMember.couple_id == couple_id)))
+
+
+def get_partner(db: Session, couple_id: str, user_id: str) -> User | None:
+    """The other member of the couple, or None if the user is still solo."""
+    other_id = db.scalar(
+        select(CoupleMember.user_id).where(
+            CoupleMember.couple_id == couple_id,
+            CoupleMember.user_id != user_id,
+        )
+    )
+    return db.get(User, other_id) if other_id is not None else None
+
+
 def member_count(db: Session, couple_id: str) -> int:
     return (
         db.scalar(

@@ -45,6 +45,7 @@ docker compose -f docker-compose.yml up --build
 | `reverse-proxy` | 80       | `${HTTP_PORT}` (80) | Nginx — only public entrypoint |
 | `frontend`      | 3000     | 3000 (dev only)    | Next.js                       |
 | `backend`       | 8000     | 8000 (dev only)    | FastAPI (migrates on startup) |
+| `worker`        | —        | —                  | Reminder poller (in-app notifications) |
 | `db`            | 5432     | —                  | PostgreSQL                    |
 
 ## Environment variables
@@ -66,6 +67,9 @@ repo root (used by docker-compose). Per-service examples live in
 | `INVITE_EXPIRE_DAYS` | backend  | `14`                     | Partner-invite code lifetime           |
 | `FRONTEND_URL`       | backend  | `http://localhost:3000`  | Base for the shareable invite link     |
 | `CORS_ORIGINS`       | backend  | `http://localhost`       | Comma-separated                        |
+| `NOTIFICATIONS_POLL_SECONDS` | worker | `60`             | How often the worker scans for due reminders |
+| `VISIT_REMINDER_DEFAULT_DAYS`| backend/worker | `3`        | Default visit-reminder lead time (per-user overridable) |
+| `EMAIL_ENABLED`      | backend/worker | `false`          | Master switch for the (future) email channel |
 | `NEXT_PUBLIC_API_URL`| frontend | `/api/v1`                | Browser API base (same-origin via proxy) |
 
 ## Authentication & onboarding
@@ -95,6 +99,33 @@ couple has exactly two partners; invites are single-use and expire after
 **Frontend routes:** `/login`, `/register`, `/join` (invite deep-link), and the
 auth-guarded `/app` dashboard. The JWT is stored in `localStorage` and the
 auth state is provided app-wide via a React context (`src/lib/auth.tsx`).
+
+## Notifications & reminders
+
+The `worker` service polls every `NOTIFICATIONS_POLL_SECONDS` and generates
+in-app notifications:
+
+- **Visit reminders** — _N days before_ a planned visit, where _N_ is each
+  user's `visit_reminder_days` preference (default `VISIT_REMINDER_DEFAULT_DAYS`).
+- **Ritual reminders** — _same-day_ for each active ritual's next occurrence,
+  computed in the ritual's own timezone.
+
+Reminders are stored with a future `trigger_at` and a per-user `dedup_key`, so
+the worker is safe to run on every poll. The dashboard's bell shows due
+notifications and an unread badge, pops a toast for new arrivals, and exposes a
+per-user reminder-settings form.
+
+| Endpoint                          | Auth | Purpose                                   |
+| --------------------------------- | ---- | ----------------------------------------- |
+| `GET   /notifications`            | JWT  | Due notifications + unread count          |
+| `POST  /notifications/{id}/read`  | JWT  | Mark one read                             |
+| `POST  /notifications/read-all`   | JWT  | Mark all due read                         |
+| `GET   /notifications/preferences`| JWT  | Read reminder preferences                 |
+| `PATCH /notifications/preferences`| JWT  | Update reminder preferences               |
+
+Email delivery and bucket-list nudges are deferred: email is wired but gated by
+`EMAIL_ENABLED`, and nudges await the bucket-list feature (the notification
+`type` is open-ended, so adding a kind needs no schema change).
 
 ## Local development without Docker
 
