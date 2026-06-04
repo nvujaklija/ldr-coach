@@ -17,6 +17,9 @@ from app.api.routes import (
     rituals,
     visits,
 )
+from app.api.routes import (
+    settings as settings_routes,
+)
 from app.core.config import settings
 from app.core.logging import configure_logging
 
@@ -50,6 +53,7 @@ def create_app() -> FastAPI:
     app.include_router(letters.router, prefix=settings.API_PREFIX)
     app.include_router(memories.router, prefix=settings.API_PREFIX)
     app.include_router(notifications.router, prefix=settings.API_PREFIX)
+    app.include_router(settings_routes.router, prefix=settings.API_PREFIX)
 
     return app
 

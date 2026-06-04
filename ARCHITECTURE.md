@@ -62,7 +62,7 @@ backend/app/
   api/deps.py        get_db, get_current_user dependencies
   api/routes/        health.py, auth.py, couples.py, visits.py, milestones.py,
                      checkins.py, rituals.py, bucket.py, letters.py,
-                     memories.py, notifications.py
+                     memories.py, notifications.py, settings.py
 alembic/             Migration environment + versions/
 ```
 
@@ -76,8 +76,10 @@ users ──< couple_members >── couples ──< visits
   └──── notification_preferences (1:1)
 ```
 
-- **users** — accounts (email, hashed_password, display_name).
-- **couples** — a pairing of two users.
+- **users** — accounts (email, hashed_password, display_name) plus per-user
+  preferences (timezone, theme, notification toggles).
+- **couples** — a pairing of two users, with shared settings (relationship
+  start date and dashboard module visibility).
 - **couple_members** — join table (couple ↔ user, with a role).
 - **couple_invites** — single-use, expiring codes the first partner shares so
   the second partner can join the couple (code, creator, expiry, redemption).
@@ -104,6 +106,13 @@ users ──< couple_members >── couples ──< visits
 - **notification_preferences** — one row per user controlling which reminders
   fire (visit lead time, ritual reminders) and the channel (in-app now; email
   wired but off by default, gated by `EMAIL_ENABLED`).
+- **settings** — not a table; a single `/api/settings` resource bundling the
+  per-user preference columns on **users** (timezone, theme, notification
+  toggles) and the shared settings columns on **couples** (relationship start
+  date, dashboard module visibility). `GET /api/settings` returns both scopes
+  (the couple scope is null until onboarding); `PUT /api/settings` applies
+  partial updates to either scope. Module visibility flags drive which sections
+  render on the dashboard.
 
 The memory timeline is also written automatically: completing a visit,
 milestone, or ritual occurrence records a `MemoryItem` through the shared
