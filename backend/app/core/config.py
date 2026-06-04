@@ -26,6 +26,12 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRE_MINUTES: int = 60 * 24
 
+    # Onboarding — partner invites
+    INVITE_EXPIRE_DAYS: int = 14
+    # Base URL the frontend serves the join page from; used to build the
+    # shareable invite link returned to the first partner.
+    FRONTEND_URL: str = "http://localhost:3000"
+
     # CORS — comma-separated list of allowed origins. NoDecode stops
     # pydantic-settings from JSON-parsing the env value so the validator
     # below can split a plain "a,b,c" string.

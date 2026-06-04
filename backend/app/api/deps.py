@@ -4,13 +4,13 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.security import decode_access_token
 from app.db.session import get_db
-from app.models import Couple, CoupleMember, User
+from app.models import Couple, User
+from app.services import couples as couple_service
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_PREFIX}/auth/login")
 
@@ -41,25 +41,16 @@ CurrentUser = Annotated[User, Depends(get_current_user)]
 def get_current_couple(db: DbSession, current_user: CurrentUser) -> Couple:
     """Return the couple the current user belongs to.
 
-    There is no couple create/join flow yet, so for now we lazily provision a
-    couple (and membership) the first time an authenticated user needs one.
-    This keeps couple-scoped features usable immediately; a real partner-invite
-    flow can replace this later without changing call sites.
+    Couple-scoped features require the user to have completed onboarding
+    (created or joined a couple). If they haven't, return 400 so the client
+    can route them through the onboarding flow.
     """
-    membership = db.scalar(
-        select(CoupleMember).where(CoupleMember.user_id == current_user.id)
-    )
-    if membership is not None:
-        couple = db.get(Couple, membership.couple_id)
-        if couple is not None:
-            return couple
-
-    couple = Couple(name=f"{current_user.display_name}'s couple")
-    db.add(couple)
-    db.flush()
-    db.add(CoupleMember(couple_id=couple.id, user_id=current_user.id))
-    db.commit()
-    db.refresh(couple)
+    couple = couple_service.get_couple_for_user(db, current_user.id)
+    if couple is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You need to create or join a couple first",
+        )
     return couple
 
 

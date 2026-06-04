@@ -8,6 +8,7 @@ import {
   type Visit,
   type VisitInput,
 } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 import MilestoneList from "@/components/MilestoneList";
 
 function countdownLabel(days: number | null): string {
@@ -92,17 +93,19 @@ function VisitForm({
 }
 
 export default function NextVisitWidget() {
+  const { token } = useAuth();
   const [visit, setVisit] = useState<Visit | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
 
   useEffect(() => {
-    getNextVisit()
+    if (!token) return;
+    getNextVisit(token)
       .then(setVisit)
       .finally(() => setLoading(false));
-  }, []);
+  }, [token]);
 
-  if (loading) {
+  if (loading || !token) {
     return (
       <p role="status" className="muted">
         Loading your next visit…
@@ -121,7 +124,7 @@ export default function NextVisitWidget() {
         <VisitForm
           submitLabel="Start the countdown"
           onSubmit={async (input) => {
-            setVisit(await createVisit(input));
+            setVisit(await createVisit(token, input));
           }}
         />
       </section>
@@ -137,7 +140,7 @@ export default function NextVisitWidget() {
           initial={visit}
           submitLabel="Save changes"
           onSubmit={async (input) => {
-            setVisit(await updateVisit(visit.id, input));
+            setVisit(await updateVisit(token, visit.id, input));
             setEditing(false);
           }}
         />
@@ -161,7 +164,7 @@ export default function NextVisitWidget() {
             type="button"
             className="ghost"
             onClick={async () => {
-              await updateVisit(visit.id, { status: "completed" });
+              await updateVisit(token, visit.id, { status: "completed" });
               setVisit(null);
             }}
           >

@@ -37,8 +37,15 @@ def client() -> Generator[TestClient, None, None]:
     app.dependency_overrides.clear()
 
 
-def register_and_login(client: TestClient, email: str, display_name: str) -> dict[str, str]:
-    """Register a fresh user, log in, and return Authorization headers."""
+def register_and_login(
+    client: TestClient, email: str, display_name: str, *, with_couple: bool = True
+) -> dict[str, str]:
+    """Register a fresh user, log in, optionally onboard a couple, and return headers.
+
+    Each call creates a distinct user; with_couple=True also creates a fresh
+    couple for them, which is what couple-scoped endpoints (visits, milestones)
+    require. Pass with_couple=False to exercise the not-onboarded path.
+    """
     client.post(
         "/api/auth/register",
         json={"email": email, "password": "supersecret", "display_name": display_name},
@@ -46,10 +53,13 @@ def register_and_login(client: TestClient, email: str, display_name: str) -> dic
     token = client.post(
         "/api/auth/login", data={"username": email, "password": "supersecret"}
     ).json()["access_token"]
-    return {"Authorization": f"Bearer {token}"}
+    headers = {"Authorization": f"Bearer {token}"}
+    if with_couple:
+        client.post("/api/couples", json={"name": f"{display_name}'s couple"}, headers=headers)
+    return headers
 
 
 @pytest.fixture
 def auth_headers(client: TestClient) -> dict[str, str]:
-    """Authorization headers for a default logged-in user (Alex)."""
+    """Authorization headers for a default logged-in, onboarded user (Alex)."""
     return register_and_login(client, "alex@example.com", "Alex")

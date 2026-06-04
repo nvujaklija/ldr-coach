@@ -1,34 +1,32 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 
-function LoginForm() {
-  const { login, token, loading } = useAuth();
+export default function RegisterPage() {
+  const { register, token, loading } = useAuth();
   const router = useRouter();
-  const params = useSearchParams();
-  const next = params.get("next") || "/app";
 
+  const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // Already signed in? Skip the form.
   useEffect(() => {
-    if (!loading && token) router.replace(next);
-  }, [loading, token, next, router]);
+    if (!loading && token) router.replace("/app");
+  }, [loading, token, router]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
     try {
-      await login(email, password);
-      router.replace(next);
+      await register(email, password, displayName);
+      router.replace("/app");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Something went wrong");
     } finally {
@@ -38,8 +36,19 @@ function LoginForm() {
 
   return (
     <main>
-      <h1>Welcome back</h1>
+      <h1>Create your account</h1>
       <form onSubmit={onSubmit} className="card">
+        <div className="field">
+          <label htmlFor="name">Your name</label>
+          <input
+            id="name"
+            type="text"
+            autoComplete="name"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            required
+          />
+        </div>
         <div className="field">
           <label htmlFor="email">Email</label>
           <input
@@ -56,7 +65,8 @@ function LoginForm() {
           <input
             id="password"
             type="password"
-            autoComplete="current-password"
+            autoComplete="new-password"
+            minLength={8}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -68,20 +78,12 @@ function LoginForm() {
           </p>
         )}
         <button type="submit" disabled={submitting}>
-          {submitting ? "Signing in…" : "Sign in"}
+          {submitting ? "Creating…" : "Create account"}
         </button>
       </form>
       <p className="muted">
-        New here? <Link href="/register">Create an account</Link>
+        Already have an account? <Link href="/login">Sign in</Link>
       </p>
     </main>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={<main><p>Loading…</p></main>}>
-      <LoginForm />
-    </Suspense>
   );
 }

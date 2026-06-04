@@ -63,8 +63,38 @@ repo root (used by docker-compose). Per-service examples live in
 | `DATABASE_URL`       | backend  | derived in compose       | SQLAlchemy URL                         |
 | `JWT_SECRET`         | backend  | _none_                   | **Required.** `openssl rand -hex 32`   |
 | `JWT_EXPIRE_MINUTES` | backend  | `1440`                   | Token lifetime                         |
+| `INVITE_EXPIRE_DAYS` | backend  | `14`                     | Partner-invite code lifetime           |
+| `FRONTEND_URL`       | backend  | `http://localhost:3000`  | Base for the shareable invite link     |
 | `CORS_ORIGINS`       | backend  | `http://localhost`       | Comma-separated                        |
 | `NEXT_PUBLIC_API_URL`| frontend | `/api`                   | Browser API base (same-origin via proxy) |
+
+## Authentication & onboarding
+
+The first vertical slice takes a visitor from no account to a logged-in user
+who belongs to a couple and lands on the dashboard shell.
+
+**API endpoints** (all under `/api`):
+
+| Method & path          | Auth | Purpose                                             |
+| ---------------------- | ---- | --------------------------------------------------- |
+| `POST /auth/register`  | —    | Create an account (email, password, display name)   |
+| `POST /auth/login`     | —    | OAuth2 password form; returns a JWT bearer token     |
+| `GET  /auth/me`        | JWT  | Current user **and** their couple (null if none)    |
+| `POST /couples`        | JWT  | Create a couple; caller becomes the first partner   |
+| `POST /couples/invites`| JWT  | Mint a single-use, expiring invite code + link      |
+| `POST /couples/join`   | JWT  | Redeem an invite code to join the partner's couple  |
+
+**Flow:** register → (auto-login) → land on `/app`. With no couple yet, the
+dashboard offers *create a couple* or *join with a code*. After creating, the
+first partner generates an invite and shares the code or link
+(`/join?code=…`). The second partner registers, opens the link, and joins —
+both now see the couple on `/app`. A user belongs to exactly one couple, and a
+couple has exactly two partners; invites are single-use and expire after
+`INVITE_EXPIRE_DAYS`.
+
+**Frontend routes:** `/login`, `/register`, `/join` (invite deep-link), and the
+auth-guarded `/app` dashboard. The JWT is stored in `localStorage` and the
+auth state is provided app-wide via a React context (`src/lib/auth.tsx`).
 
 ## Local development without Docker
 

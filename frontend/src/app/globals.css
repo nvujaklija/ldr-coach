@@ -34,11 +34,25 @@ a {
   color: var(--accent);
 }
 
+.card {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+}
+
 .stack {
   display: flex;
   flex-direction: column;
   gap: 1rem;
   max-width: 360px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
 }
 
 label {
@@ -49,31 +63,36 @@ label {
   color: var(--muted);
 }
 
+.field label {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
 input,
 select,
 textarea {
   padding: 0.6rem 0.75rem;
   border-radius: 8px;
-  border: 1px solid #2c2f52;
+  border: 1px solid #2c2f4d;
   background: #12132a;
   color: var(--text);
   font-size: 1rem;
 }
 
 button {
-  cursor: pointer;
   padding: 0.6rem 1rem;
-  border: none;
   border-radius: 8px;
+  border: none;
   background: var(--accent);
   color: #1a1020;
-  font-weight: 600;
   font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 button:disabled {
   opacity: 0.6;
-  cursor: progress;
+  cursor: not-allowed;
 }
 
 button.link {
@@ -91,15 +110,13 @@ button.ghost {
 }
 
 .error {
-  color: #ff8095;
+  color: #ff8b8b;
   font-size: 0.9rem;
+  margin: 0.5rem 0;
 }
 
-.card {
-  background: var(--card);
-  border-radius: 14px;
-  padding: 1.5rem;
-  margin: 1.5rem 0;
+.muted {
+  color: var(--muted);
 }
 
 .countdown {
@@ -107,10 +124,6 @@ button.ghost {
   font-weight: 700;
   color: var(--accent);
   line-height: 1;
-}
-
-.muted {
-  color: var(--muted);
 }
 
 ul.milestones {
@@ -145,4 +158,14 @@ ul.milestones li.done span.title {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 1.25rem;
+  letter-spacing: 0.15em;
+  background: #12132a;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  display: inline-block;
 }

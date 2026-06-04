@@ -4,6 +4,9 @@ import MilestoneList from "@/components/MilestoneList";
 import * as api from "@/lib/api";
 
 vi.mock("@/lib/api");
+vi.mock("@/lib/auth", () => ({
+  useAuth: () => ({ token: "test-token" }),
+}));
 const mockedApi = vi.mocked(api);
 
 describe("MilestoneList", () => {
@@ -36,7 +39,11 @@ describe("MilestoneList", () => {
     await waitFor(() =>
       expect(screen.getByText("finalize itinerary")).toBeInTheDocument(),
     );
-    expect(mockedApi.createMilestone).toHaveBeenCalledWith("finalize itinerary", "v1");
+    expect(mockedApi.createMilestone).toHaveBeenCalledWith(
+      "test-token",
+      "finalize itinerary",
+      "v1",
+    );
   });
 
   it("toggles a milestone to done", async () => {
@@ -58,7 +65,9 @@ describe("MilestoneList", () => {
     fireEvent.click(checkbox);
 
     await waitFor(() =>
-      expect(mockedApi.updateMilestone).toHaveBeenCalledWith("m1", { status: "done" }),
+      expect(mockedApi.updateMilestone).toHaveBeenCalledWith("test-token", "m1", {
+        status: "done",
+      }),
     );
     await waitFor(() =>
       expect(screen.getByRole("checkbox")).toBeChecked(),

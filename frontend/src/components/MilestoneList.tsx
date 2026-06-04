@@ -7,18 +7,21 @@ import {
   updateMilestone,
   type Milestone,
 } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 
 /** Checklist of milestones for one visit, with create + done toggle. */
 export default function MilestoneList({ visitId }: { visitId: string }) {
+  const { token } = useAuth();
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [title, setTitle] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(() => {
-    listMilestones(visitId)
+    if (!token) return;
+    listMilestones(token, visitId)
       .then(setMilestones)
       .catch(() => setError("Could not load milestones"));
-  }, [visitId]);
+  }, [token, visitId]);
 
   useEffect(() => {
     refresh();
@@ -27,10 +30,10 @@ export default function MilestoneList({ visitId }: { visitId: string }) {
   async function addMilestone(e: FormEvent) {
     e.preventDefault();
     const trimmed = title.trim();
-    if (!trimmed) return;
+    if (!trimmed || !token) return;
     setError(null);
     try {
-      const created = await createMilestone(trimmed, visitId);
+      const created = await createMilestone(token, trimmed, visitId);
       setMilestones((prev) => [...prev, created]);
       setTitle("");
     } catch {
@@ -39,9 +42,10 @@ export default function MilestoneList({ visitId }: { visitId: string }) {
   }
 
   async function toggle(m: Milestone) {
+    if (!token) return;
     const next = m.status === "done" ? "todo" : "done";
     try {
-      const updated = await updateMilestone(m.id, { status: next });
+      const updated = await updateMilestone(token, m.id, { status: next });
       setMilestones((prev) => prev.map((x) => (x.id === m.id ? updated : x)));
     } catch {
       setError("Could not update milestone");

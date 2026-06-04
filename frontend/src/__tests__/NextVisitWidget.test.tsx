@@ -8,6 +8,10 @@ vi.mock("@/lib/api");
 vi.mock("@/components/MilestoneList", () => ({
   default: () => <div data-testid="milestones" />,
 }));
+// The widget reads the token from the auth context.
+vi.mock("@/lib/auth", () => ({
+  useAuth: () => ({ token: "test-token" }),
+}));
 
 const mockedApi = vi.mocked(api);
 
@@ -63,7 +67,7 @@ describe("NextVisitWidget", () => {
     await waitFor(() =>
       expect(screen.getByTestId("countdown")).toHaveTextContent("10"),
     );
-    expect(mockedApi.createVisit).toHaveBeenCalledWith({
+    expect(mockedApi.createVisit).toHaveBeenCalledWith("test-token", {
       location: "Oslo",
       start_date: "2026-08-01",
       end_date: null,

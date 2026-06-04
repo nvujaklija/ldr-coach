@@ -9,7 +9,8 @@ from sqlalchemy import select
 from app.api.deps import CurrentUser, DbSession
 from app.core.security import create_access_token, hash_password, verify_password
 from app.models import User
-from app.schemas.auth import Token, UserOut, UserRegister
+from app.schemas.auth import MeOut, Token, UserOut, UserRegister
+from app.services import couples as couple_service
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -46,6 +47,12 @@ def login(form: Annotated[OAuth2PasswordRequestForm, Depends()], db: DbSession) 
     return Token(access_token=create_access_token(user.id))
 
 
-@router.get("/me", response_model=UserOut)
-def me(current_user: CurrentUser) -> User:
-    return current_user
+@router.get("/me", response_model=MeOut)
+def me(current_user: CurrentUser, db: DbSession) -> MeOut:
+    couple = couple_service.get_couple_for_user(db, current_user.id)
+    return MeOut(
+        id=current_user.id,
+        email=current_user.email,
+        display_name=current_user.display_name,
+        couple=couple_service.build_couple_out(db, couple) if couple else None,
+    )

@@ -29,6 +29,13 @@ def test_next_is_null_before_any_visit(client: TestClient, auth_headers: dict) -
     assert r.json() is None
 
 
+def test_requires_onboarded_couple(client: TestClient) -> None:
+    # A logged-in user who hasn't created/joined a couple is bounced to onboarding.
+    headers = register_and_login(client, "solo@example.com", "Solo", with_couple=False)
+    assert client.get(NEXT, headers=headers).status_code == 400
+    assert client.post(VISITS, json=_future_visit(), headers=headers).status_code == 400
+
+
 def test_create_and_countdown(client: TestClient, auth_headers: dict) -> None:
     r = client.post(VISITS, json=_future_visit(days=10), headers=auth_headers)
     assert r.status_code == 201, r.text
