@@ -13,6 +13,7 @@ from sqlalchemy import select
 from app.api.deps import CurrentCouple, DbSession
 from app.models import Visit
 from app.schemas.visit import VisitCreate, VisitOut, VisitUpdate
+from app.services import memories as memory_service
 
 router = APIRouter(prefix="/visits", tags=["visits"])
 
@@ -78,8 +79,12 @@ def update_visit(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="This couple already has an active next visit",
             )
+    was_completed = visit.status == "completed"
     for field, value in data.items():
         setattr(visit, field, value)
+    # A visit reaching "completed" for the first time becomes a timeline memory.
+    if visit.status == "completed" and not was_completed:
+        memory_service.record_visit_completed(db, visit)
     db.commit()
     db.refresh(visit)
     return _to_out(visit)

@@ -1,7 +1,10 @@
 "use client";
 
+import BucketListSection from "@/components/BucketListSection";
 import CheckInCard from "@/components/CheckInCard";
 import CoupleOnboarding from "@/components/CoupleOnboarding";
+import LettersSection from "@/components/LettersSection";
+import MemoriesTimeline from "@/components/MemoriesTimeline";
 import NextVisitWidget from "@/components/NextVisitWidget";
 import NotificationCenter from "@/components/NotificationCenter";
 import RequireAuth from "@/components/RequireAuth";
@@ -26,6 +29,11 @@ function Dashboard() {
       {me?.couple && <NextVisitWidget />}
       {/* Rituals are couple-scoped too. */}
       {me?.couple && <RitualsSection />}
+      {/* Bucket list is couple-scoped too. */}
+      {me?.couple && <BucketListSection />}
+      {/* Letters and the memory timeline are couple-scoped. */}
+      {me?.couple && <LettersSection />}
+      {me?.couple && <MemoriesTimeline />}
       <button type="button" onClick={logout}>
         Sign out
       </button>
