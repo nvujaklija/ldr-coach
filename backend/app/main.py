@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app import __version__
 from app.api.routes import (
     auth,
+    bucket,
     checkins,
     couples,
     health,
@@ -42,6 +43,7 @@ def create_app() -> FastAPI:
     app.include_router(milestones.router, prefix=settings.API_PREFIX)
     app.include_router(checkins.router, prefix=settings.API_PREFIX)
     app.include_router(rituals.router, prefix=settings.API_PREFIX)
+    app.include_router(bucket.router, prefix=settings.API_PREFIX)
 
     return app
 
