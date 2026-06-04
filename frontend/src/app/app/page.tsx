@@ -4,6 +4,7 @@ import CheckInCard from "@/components/CheckInCard";
 import CoupleOnboarding from "@/components/CoupleOnboarding";
 import NextVisitWidget from "@/components/NextVisitWidget";
 import RequireAuth from "@/components/RequireAuth";
+import RitualsSection from "@/components/RitualsSection";
 import { useAuth } from "@/lib/auth";
 
 function Dashboard() {
@@ -19,6 +20,8 @@ function Dashboard() {
       <CheckInCard />
       {/* The countdown is couple-scoped, so only show it once paired up. */}
       {me?.couple && <NextVisitWidget />}
+      {/* Rituals are couple-scoped too. */}
+      {me?.couple && <RitualsSection />}
       <button type="button" onClick={logout}>
         Sign out
       </button>
