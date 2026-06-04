@@ -55,7 +55,7 @@ backend/app/
   services/          couples.py — membership + invite helpers shared by routes
   api/deps.py        get_db, get_current_user dependencies
   api/routes/        health.py, auth.py, couples.py, visits.py, milestones.py,
-                     checkins.py
+                     checkins.py, rituals.py, settings.py
 alembic/             Migration environment + versions/
 ```
 
@@ -68,8 +68,10 @@ users ──< couple_members >── couples ──< visits
                                 └──< rituals
 ```
 
-- **users** — accounts (email, hashed_password, display_name).
-- **couples** — a pairing of two users.
+- **users** — accounts (email, hashed_password, display_name) plus per-user
+  preferences (timezone, theme, notification toggles).
+- **couples** — a pairing of two users, with shared settings (relationship
+  start date and dashboard module visibility).
 - **couple_members** — join table (couple ↔ user, with a role).
 - **couple_invites** — single-use, expiring codes the first partner shares so
   the second partner can join the couple (code, creator, expiry, redemption).
@@ -79,6 +81,12 @@ users ──< couple_members >── couples ──< visits
   tags, optional note); one row per user per day, scoped to the couple when
   matched. Endpoints: `POST /api/checkins/today` (idempotent upsert),
   `GET /api/checkins?days=N` (recent check-ins + rolling averages).
+- **settings** — not a table; a single `/api/settings` resource bundling the
+  per-user preference columns on **users** and the shared settings columns on
+  **couples**. `GET /api/settings` returns both scopes (the couple scope is
+  null until onboarding); `PUT /api/settings` applies partial updates to
+  either scope. Module visibility flags drive which sections render on the
+  dashboard.
 
 All tables use string UUID primary keys and `created_at`/`updated_at`
 timestamps. Foreign keys cascade on delete. Schema changes go through Alembic
