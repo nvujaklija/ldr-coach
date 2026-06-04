@@ -1,4 +1,9 @@
-"""Shared pytest fixtures: an isolated in-memory DB and API client."""
+"""Shared pytest fixtures: an isolated in-memory DB and API client.
+
+The ``client`` and ``db`` fixtures share one in-memory SQLite database for
+the duration of a test, so a test can seed rows directly (e.g. couple
+membership, which has no public endpoint yet) and see them through the API.
+"""
 
 from collections.abc import Generator
 
@@ -14,22 +19,33 @@ from app.main import app
 
 
 @pytest.fixture
-def client() -> Generator[TestClient, None, None]:
-    # One shared in-memory SQLite DB for the duration of the test.
+def session_factory() -> sessionmaker:
     engine = create_engine(
         "sqlite://",
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
     )
     Base.metadata.create_all(engine)
-    TestingSession = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+    return sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
+
+@pytest.fixture
+def db(session_factory: sessionmaker) -> Generator[Session, None, None]:
+    session = session_factory()
+    try:
+        yield session
+    finally:
+        session.close()
+
+
+@pytest.fixture
+def client(session_factory: sessionmaker) -> Generator[TestClient, None, None]:
     def override_get_db() -> Generator[Session, None, None]:
-        db = TestingSession()
+        session = session_factory()
         try:
-            yield db
+            yield session
         finally:
-            db.close()
+            session.close()
 
     app.dependency_overrides[get_db] = override_get_db
     with TestClient(app) as c:
