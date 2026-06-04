@@ -1,4 +1,5 @@
 import BackendStatus from "@/components/BackendStatus";
+import CheckInCard from "@/components/CheckInCard";
 
 export default function DashboardPage() {
   return (
@@ -9,6 +10,7 @@ export default function DashboardPage() {
         placeholder dashboard for the v0 foundation.
       </p>
       <BackendStatus />
+      <CheckInCard />
     </main>
   );
 }
