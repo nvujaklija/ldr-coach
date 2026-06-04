@@ -331,6 +331,69 @@ export async function updateRitualInstance(
   });
 }
 
+// --- notifications -------------------------------------------------------
+export type NotificationType = "visit_reminder" | "ritual_reminder";
+
+export interface AppNotification {
+  id: string;
+  type: string;
+  title: string;
+  body: string | null;
+  payload: Record<string, unknown>;
+  trigger_at: string; // ISO datetime (UTC)
+  read_at: string | null;
+  created_at: string;
+}
+
+export interface NotificationList {
+  notifications: AppNotification[];
+  unread_count: number;
+}
+
+export interface NotificationPreferences {
+  visit_reminder_days: number;
+  visit_reminders_enabled: boolean;
+  ritual_reminders_enabled: boolean;
+  in_app_enabled: boolean;
+  email_enabled: boolean;
+}
+
+export async function listNotifications(
+  token: string,
+  includeRead = false,
+): Promise<NotificationList> {
+  const query = includeRead ? "?include_read=true" : "";
+  return request<NotificationList>(`/notifications${query}`, { token });
+}
+
+export async function markNotificationRead(
+  token: string,
+  id: string,
+): Promise<AppNotification> {
+  return request<AppNotification>(`/notifications/${id}/read`, { method: "POST", token });
+}
+
+export async function markAllNotificationsRead(token: string): Promise<NotificationList> {
+  return request<NotificationList>("/notifications/read-all", { method: "POST", token });
+}
+
+export async function getNotificationPreferences(
+  token: string,
+): Promise<NotificationPreferences> {
+  return request<NotificationPreferences>("/notifications/preferences", { token });
+}
+
+export async function updateNotificationPreferences(
+  token: string,
+  patch: Partial<NotificationPreferences>,
+): Promise<NotificationPreferences> {
+  return request<NotificationPreferences>("/notifications/preferences", {
+    method: "PATCH",
+    token,
+    json: patch,
+  });
+}
+
 // --- letters -------------------------------------------------------------
 export type LetterBox = "inbox" | "sent";
 
