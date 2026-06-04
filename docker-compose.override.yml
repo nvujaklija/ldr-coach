@@ -15,6 +15,14 @@ services:
     ports:
       - "8000:8000"
 
+  worker:
+    environment:
+      ENV: development
+      # Poll faster in dev so reminders show up promptly while testing.
+      NOTIFICATIONS_POLL_SECONDS: "15"
+    volumes:
+      - ./backend:/app
+
   frontend:
     command: sh -c "npm install && npm run dev"
     environment:
