@@ -63,9 +63,9 @@ alembic/             Migration environment + versions/
 
 ```
 users ──< couple_members >── couples ──< visits
-  │                              │
-  └──< check_ins >──────────────┤
-                                └──< rituals
+  │                              ├──< rituals
+  └──< check_ins >──────────────┼──< letters
+                                └──< memory_items
 ```
 
 - **users** — accounts (email, hashed_password, display_name).
@@ -79,6 +79,22 @@ users ──< couple_members >── couples ──< visits
   tags, optional note); one row per user per day, scoped to the couple when
   matched. Endpoints: `POST /api/checkins/today` (idempotent upsert),
   `GET /api/checkins?days=N` (recent check-ins + rolling averages).
+- **letters** — time-released messages from one partner to the other
+  (`from_user`/`to_user`, `visible_from`, title, body, `is_opened`). The API is
+  the gatekeeper: a locked letter's body is never serialized to its recipient
+  before `visible_from`; the sender always sees their own. Endpoints:
+  `POST /api/letters`, `GET /api/letters?box=inbox|sent`,
+  `POST /api/letters/{id}/open`.
+- **memory_items** — the couple's shared timeline. Each row is a `type`
+  (`photo`/`note`/`ritual`/`visit`) plus a free-form `data` JSON blob, so the
+  timeline holds heterogeneous moments without a table per kind. Endpoints:
+  `GET /api/memories?limit=&offset=` (newest first, paged), `POST /api/memories`.
+
+The memory timeline is also written automatically: completing a visit,
+milestone, or ritual occurrence records a `MemoryItem` through the shared
+`app.services.memories` writer, which adds the row in the same transaction as
+the state change that triggered it. Auto-recorded memories carry a `source`
+key in `data` and a null `created_by_id`.
 
 All tables use string UUID primary keys and `created_at`/`updated_at`
 timestamps. Foreign keys cascade on delete. Schema changes go through Alembic
