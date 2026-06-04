@@ -50,10 +50,12 @@ backend/app/
   core/logging.py    JSON logs to stdout
   db/base.py         Declarative Base + UUID/timestamp mixins
   db/session.py      Engine + session factory + get_db dependency
-  models/            User, Couple, CoupleMember, Visit, Ritual, CheckIn
+  models/            User, Couple, CoupleMember, CoupleInvite, Visit, Ritual, CheckIn
   schemas/           Pydantic request/response models
+  services/          couples.py — membership + invite helpers shared by routes
   api/deps.py        get_db, get_current_user dependencies
   api/routes/        health.py, auth.py, checkins.py
+  api/routes/        health.py, auth.py, couples.py
 alembic/             Migration environment + versions/
 ```
 
@@ -69,6 +71,8 @@ users ──< couple_members >── couples ──< visits
 - **users** — accounts (email, hashed_password, display_name).
 - **couples** — a pairing of two users.
 - **couple_members** — join table (couple ↔ user, with a role).
+- **couple_invites** — single-use, expiring codes the first partner shares so
+  the second partner can join the couple (code, creator, expiry, redemption).
 - **visits** — planned/past in-person visits for a couple.
 - **rituals** — recurring shared activities (cadence + description).
 - **check_ins** — per-user daily mood/connection check-ins (1–5 scores,
