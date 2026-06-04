@@ -6,8 +6,8 @@ from fastapi.testclient import TestClient
 
 from tests.conftest import register_and_login
 
-VISITS = "/api/visits"
-NEXT = "/api/visits/next"
+VISITS = "/api/v1/visits"
+NEXT = "/api/v1/visits/next"
 
 
 def _future_visit(days: int = 30) -> dict[str, str]:

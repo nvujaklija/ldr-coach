@@ -77,8 +77,8 @@ users ──< couple_members >── couples ──< visits
 - **rituals** — recurring shared activities (cadence + description).
 - **check_ins** — per-user daily mood/connection check-ins (1–5 scores,
   tags, optional note); one row per user per day, scoped to the couple when
-  matched. Endpoints: `POST /api/checkins/today` (idempotent upsert),
-  `GET /api/checkins?days=N` (recent check-ins + rolling averages).
+  matched. Endpoints: `POST /api/v1/checkins/today` (idempotent upsert),
+  `GET /api/v1/checkins?days=N` (recent check-ins + rolling averages).
 
 All tables use string UUID primary keys and `created_at`/`updated_at`
 timestamps. Foreign keys cascade on delete. Schema changes go through Alembic
@@ -86,7 +86,7 @@ timestamps. Foreign keys cascade on delete. Schema changes go through Alembic
 
 ## Request flow (example: login)
 
-1. Browser POSTs `/api/auth/login` → nginx → `backend:8000`.
+1. Browser POSTs `/api/v1/auth/login` → nginx → `backend:8000`.
 2. FastAPI validates the form, looks up the user, verifies the bcrypt hash.
 3. On success, returns a signed JWT; the client sends it as a Bearer token.
 4. Protected routes resolve the user via `get_current_user` (`api/deps.py`).

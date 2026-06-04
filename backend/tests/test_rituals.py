@@ -9,7 +9,7 @@ from app.models import CoupleRitual
 from app.services.rituals import compute_next_occurrence, seed_default_templates
 from tests.conftest import register_and_login
 
-RITUALS = "/api/rituals"
+RITUALS = "/api/v1/rituals"
 
 
 # --- scheduling unit tests (pure, deterministic) -------------------------

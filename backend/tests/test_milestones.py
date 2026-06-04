@@ -6,8 +6,8 @@ from fastapi.testclient import TestClient
 
 from tests.conftest import register_and_login
 
-VISITS = "/api/visits"
-MILESTONES = "/api/milestones"
+VISITS = "/api/v1/visits"
+MILESTONES = "/api/v1/milestones"
 
 
 def _make_visit(client: TestClient, headers: dict) -> str:

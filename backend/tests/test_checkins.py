@@ -5,10 +5,10 @@ from sqlalchemy.orm import Session
 
 from app.models import Couple, CoupleMember, User
 
-REGISTER = "/api/auth/register"
-LOGIN = "/api/auth/login"
-TODAY = "/api/checkins/today"
-LIST = "/api/checkins"
+REGISTER = "/api/v1/auth/register"
+LOGIN = "/api/v1/auth/login"
+TODAY = "/api/v1/checkins/today"
+LIST = "/api/v1/checkins"
 
 
 def _auth(client: TestClient, email: str) -> dict[str, str]:

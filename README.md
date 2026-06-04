@@ -27,8 +27,8 @@ docker compose up --build
 ```
 
 Then open **http://localhost** — the dashboard renders and shows the backend
-connection status. The API is proxied under **http://localhost/api** (docs at
-`/api/docs`).
+connection status. The API is versioned and proxied under
+**http://localhost/api/v1** (docs at `/api/v1/docs`).
 
 By default `docker compose up` also merges `docker-compose.override.yml`,
 which enables hot-reload for local development. For a production-style run
@@ -66,14 +66,14 @@ repo root (used by docker-compose). Per-service examples live in
 | `INVITE_EXPIRE_DAYS` | backend  | `14`                     | Partner-invite code lifetime           |
 | `FRONTEND_URL`       | backend  | `http://localhost:3000`  | Base for the shareable invite link     |
 | `CORS_ORIGINS`       | backend  | `http://localhost`       | Comma-separated                        |
-| `NEXT_PUBLIC_API_URL`| frontend | `/api`                   | Browser API base (same-origin via proxy) |
+| `NEXT_PUBLIC_API_URL`| frontend | `/api/v1`                | Browser API base (same-origin via proxy) |
 
 ## Authentication & onboarding
 
 The first vertical slice takes a visitor from no account to a logged-in user
 who belongs to a couple and lands on the dashboard shell.
 
-**API endpoints** (all under `/api`):
+**API endpoints** (all under `/api/v1`):
 
 | Method & path          | Auth | Purpose                                             |
 | ---------------------- | ---- | --------------------------------------------------- |

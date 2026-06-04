@@ -16,7 +16,9 @@ class Settings(BaseSettings):
 
     # Runtime
     ENV: str = "development"
-    API_PREFIX: str = "/api"
+    # Versioned, stable API mount point. Nginx proxies all of /api/ to the
+    # backend, so bumping the version here is the only server-side change needed.
+    API_PREFIX: str = "/api/v1"
 
     # Database — overridden to Postgres in docker-compose
     DATABASE_URL: str = "sqlite:///./dev.db"

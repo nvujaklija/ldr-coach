@@ -5,12 +5,12 @@ from fastapi.testclient import TestClient
 
 from app.core.config import settings
 
-REGISTER = "/api/auth/register"
-LOGIN = "/api/auth/login"
-ME = "/api/auth/me"
-COUPLES = "/api/couples"
-INVITES = "/api/couples/invites"
-JOIN = "/api/couples/join"
+REGISTER = "/api/v1/auth/register"
+LOGIN = "/api/v1/auth/login"
+ME = "/api/v1/auth/me"
+COUPLES = "/api/v1/couples"
+INVITES = "/api/v1/couples/invites"
+JOIN = "/api/v1/couples/join"
 
 
 def _auth(client: TestClient, email: str, name: str) -> dict[str, str]:

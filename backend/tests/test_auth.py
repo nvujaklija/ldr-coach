@@ -2,9 +2,9 @@
 
 from fastapi.testclient import TestClient
 
-REGISTER = "/api/auth/register"
-LOGIN = "/api/auth/login"
-ME = "/api/auth/me"
+REGISTER = "/api/v1/auth/register"
+LOGIN = "/api/v1/auth/login"
+ME = "/api/v1/auth/me"
 
 CREDS = {"email": "sam@example.com", "password": "supersecret", "display_name": "Sam"}
 
