@@ -1,5 +1,6 @@
 "use client";
 
+import BucketListSection from "@/components/BucketListSection";
 import CheckInCard from "@/components/CheckInCard";
 import CoupleOnboarding from "@/components/CoupleOnboarding";
 import NextVisitWidget from "@/components/NextVisitWidget";
@@ -22,6 +23,8 @@ function Dashboard() {
       {me?.couple && <NextVisitWidget />}
       {/* Rituals are couple-scoped too. */}
       {me?.couple && <RitualsSection />}
+      {/* Bucket list is couple-scoped too. */}
+      {me?.couple && <BucketListSection />}
       <button type="button" onClick={logout}>
         Sign out
       </button>
