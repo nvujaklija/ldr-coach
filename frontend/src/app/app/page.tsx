@@ -3,6 +3,7 @@
 import CheckInCard from "@/components/CheckInCard";
 import CoupleOnboarding from "@/components/CoupleOnboarding";
 import NextVisitWidget from "@/components/NextVisitWidget";
+import NotificationCenter from "@/components/NotificationCenter";
 import RequireAuth from "@/components/RequireAuth";
 import RitualsSection from "@/components/RitualsSection";
 import { useAuth } from "@/lib/auth";
@@ -11,7 +12,10 @@ function Dashboard() {
   const { me, logout } = useAuth();
   return (
     <main>
-      <h1>Hi {me?.display_name} 👋</h1>
+      <div className="topbar">
+        <h1>Hi {me?.display_name} 👋</h1>
+        <NotificationCenter />
+      </div>
       <p className="muted">
         Your shared space for staying close across the distance.
       </p>
