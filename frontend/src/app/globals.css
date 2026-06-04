@@ -6,6 +6,26 @@
   --muted: #a0a3c0;
 }
 
+/* Light theme: applied when the user picks "light", or "system" while the
+   OS prefers a light appearance. Driven by <html data-theme="…">. */
+[data-theme="light"] {
+  --bg: #f6f6fb;
+  --card: #ffffff;
+  --accent: #e0436a;
+  --text: #1a1c33;
+  --muted: #5b5e80;
+}
+
+@media (prefers-color-scheme: light) {
+  [data-theme="system"] {
+    --bg: #f6f6fb;
+    --card: #ffffff;
+    --accent: #e0436a;
+    --text: #1a1c33;
+    --muted: #5b5e80;
+  }
+}
+
 * {
   box-sizing: border-box;
 }

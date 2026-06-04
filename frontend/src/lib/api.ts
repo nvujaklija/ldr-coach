@@ -330,3 +330,42 @@ export async function updateRitualInstance(
     json: { status },
   });
 }
+
+// --- settings ------------------------------------------------------------
+export type Theme = "system" | "light" | "dark";
+
+export interface UserSettings {
+  timezone: string; // IANA
+  theme: Theme;
+  notify_checkin_reminders: boolean;
+  notify_visit_reminders: boolean;
+  notify_ritual_reminders: boolean;
+}
+
+export interface CoupleSettings {
+  relationship_start_date: string | null; // ISO date (YYYY-MM-DD)
+  show_visits: boolean;
+  show_rituals: boolean;
+  show_checkins: boolean;
+}
+
+export interface Settings {
+  user: UserSettings;
+  couple: CoupleSettings | null;
+}
+
+export interface SettingsUpdate {
+  user?: Partial<UserSettings>;
+  couple?: Partial<CoupleSettings>;
+}
+
+export async function getSettings(token: string): Promise<Settings> {
+  return request<Settings>("/settings", { token });
+}
+
+export async function updateSettings(
+  token: string,
+  patch: SettingsUpdate,
+): Promise<Settings> {
+  return request<Settings>("/settings", { method: "PUT", token, json: patch });
+}
