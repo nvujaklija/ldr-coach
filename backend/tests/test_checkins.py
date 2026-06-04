@@ -15,9 +15,9 @@ def _auth(client: TestClient, email: str) -> dict[str, str]:
     """Register + login a user, returning an Authorization header."""
     creds = {"email": email, "password": "supersecret", "display_name": email[:5]}
     client.post(REGISTER, json=creds)
-    token = client.post(
-        LOGIN, data={"username": email, "password": "supersecret"}
-    ).json()["access_token"]
+    token = client.post(LOGIN, data={"username": email, "password": "supersecret"}).json()[
+        "access_token"
+    ]
     return {"Authorization": f"Bearer {token}"}
 
 

@@ -17,8 +17,12 @@ RITUALS = "/api/v1/rituals"
 
 def test_compute_next_occurrence_weekly_lands_on_target_weekday() -> None:
     ritual = CoupleRitual(
-        couple_id="c", title="t", cadence="weekly",
-        day_of_week=0, time_of_day="09:00", timezone="UTC",  # Monday 09:00
+        couple_id="c",
+        title="t",
+        cadence="weekly",
+        day_of_week=0,
+        time_of_day="09:00",
+        timezone="UTC",  # Monday 09:00
     )
     after = datetime(2026, 6, 3, 12, 0, tzinfo=UTC)  # a Wednesday
     nxt = compute_next_occurrence(ritual, after=after)
@@ -87,8 +91,11 @@ def test_create_custom_ritual_without_template(client: TestClient, auth_headers:
     r = client.post(
         RITUALS,
         json={
-            "title": "Sunday call", "cadence": "weekly",
-            "day_of_week": 6, "time_of_day": "09:00", "timezone": "UTC",
+            "title": "Sunday call",
+            "cadence": "weekly",
+            "day_of_week": 6,
+            "time_of_day": "09:00",
+            "timezone": "UTC",
         },
         headers=auth_headers,
     )
@@ -124,8 +131,13 @@ def test_list_returns_active_rituals_in_order(client: TestClient, auth_headers: 
     )
     client.post(
         RITUALS,
-        json={"title": "B", "cadence": "weekly", "day_of_week": 2,
-              "time_of_day": "19:00", "timezone": "UTC"},
+        json={
+            "title": "B",
+            "cadence": "weekly",
+            "day_of_week": 2,
+            "time_of_day": "19:00",
+            "timezone": "UTC",
+        },
         headers=auth_headers,
     )
     r = client.get(RITUALS, headers=auth_headers)
@@ -150,9 +162,7 @@ def test_pause_clears_next_instance_and_cancel_hides_ritual(
     assert client.get(RITUALS, headers=auth_headers).json() == []
 
 
-def test_mark_instance_done_rolls_schedule_forward(
-    client: TestClient, auth_headers: dict
-) -> None:
+def test_mark_instance_done_rolls_schedule_forward(client: TestClient, auth_headers: dict) -> None:
     created = client.post(
         RITUALS,
         json={"title": "Daily", "cadence": "daily", "time_of_day": "08:00", "timezone": "UTC"},
@@ -177,7 +187,8 @@ def test_couple_isolation(client: TestClient, auth_headers: dict) -> None:
     ).json()["id"]
 
     other = register_and_login(client, "sam@example.com", "Sam")
-    assert client.patch(
-        f"{RITUALS}/{rid}", json={"status": "paused"}, headers=other
-    ).status_code == 404
+    assert (
+        client.patch(f"{RITUALS}/{rid}", json={"status": "paused"}, headers=other).status_code
+        == 404
+    )
     assert client.get(RITUALS, headers=other).json() == []
