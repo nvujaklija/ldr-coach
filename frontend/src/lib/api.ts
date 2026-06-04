@@ -330,3 +330,74 @@ export async function updateRitualInstance(
     json: { status },
   });
 }
+
+// --- letters -------------------------------------------------------------
+export type LetterBox = "inbox" | "sent";
+
+export interface Letter {
+  id: string;
+  couple_id: string;
+  from_user_id: string;
+  to_user_id: string;
+  from_name: string;
+  to_name: string;
+  title: string;
+  body: string | null; // null while a received letter is still locked
+  visible_from: string; // ISO datetime (UTC)
+  is_opened: boolean;
+  is_locked: boolean;
+  direction: "sent" | "received";
+  created_at: string;
+}
+
+export interface LetterInput {
+  title: string;
+  body: string;
+  visible_from?: string | null; // ISO datetime; omit/past = unlocked now
+  to_user_id?: string | null;
+}
+
+export async function listLetters(
+  token: string,
+  box: LetterBox = "inbox",
+): Promise<Letter[]> {
+  return request<Letter[]>(`/letters?box=${box}`, { token });
+}
+
+export async function createLetter(
+  token: string,
+  input: LetterInput,
+): Promise<Letter> {
+  return request<Letter>("/letters", { method: "POST", token, json: input });
+}
+
+export async function openLetter(token: string, id: string): Promise<Letter> {
+  return request<Letter>(`/letters/${id}/open`, { method: "POST", token });
+}
+
+// --- memories ------------------------------------------------------------
+export type MemoryType = "photo" | "note" | "ritual" | "visit";
+
+export interface MemoryItem {
+  id: string;
+  type: MemoryType;
+  data: Record<string, unknown> & { title?: string; source?: string };
+  created_by_id: string | null;
+  created_at: string;
+}
+
+export async function listMemories(
+  token: string,
+  limit = 20,
+  offset = 0,
+): Promise<MemoryItem[]> {
+  return request<MemoryItem[]>(`/memories?limit=${limit}&offset=${offset}`, { token });
+}
+
+export async function createMemory(
+  token: string,
+  type: MemoryType,
+  data: Record<string, unknown>,
+): Promise<MemoryItem> {
+  return request<MemoryItem>("/memories", { method: "POST", token, json: { type, data } });
+}
