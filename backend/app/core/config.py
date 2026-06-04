@@ -32,6 +32,18 @@ class Settings(BaseSettings):
     # shareable invite link returned to the first partner.
     FRONTEND_URL: str = "http://localhost:3000"
 
+    # Notifications / reminders worker
+    # How often the worker scans for due reminders, in seconds.
+    NOTIFICATIONS_POLL_SECONDS: int = 60
+    # Default lead time for a "your visit is coming up" reminder; users can
+    # override this in their per-user preferences.
+    VISIT_REMINDER_DEFAULT_DAYS: int = 3
+    # Local wall-clock hour (in the relevant timezone) reminders fire at.
+    REMINDER_HOUR_LOCAL: int = 9
+    # Master switch for the (future) email channel. In-app always works; email
+    # delivery is additionally gated per-user by NotificationPreference.
+    EMAIL_ENABLED: bool = False
+
     # CORS — comma-separated list of allowed origins. NoDecode stops
     # pydantic-settings from JSON-parsing the env value so the validator
     # below can split a plain "a,b,c" string.

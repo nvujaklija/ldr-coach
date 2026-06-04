@@ -2,9 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import BucketListSection from "@/components/BucketListSection";
 import CheckInCard from "@/components/CheckInCard";
 import CoupleOnboarding from "@/components/CoupleOnboarding";
+import LettersSection from "@/components/LettersSection";
+import MemoriesTimeline from "@/components/MemoriesTimeline";
 import NextVisitWidget from "@/components/NextVisitWidget";
+import NotificationCenter from "@/components/NotificationCenter";
 import RequireAuth from "@/components/RequireAuth";
 import RitualsSection from "@/components/RitualsSection";
 import { getSettings, type Settings } from "@/lib/api";
@@ -48,9 +52,12 @@ function Dashboard() {
     <main>
       <div className="topbar">
         <h1>Hi {me?.display_name} 👋</h1>
-        <Link href="/app/settings" className="link">
-          Settings
-        </Link>
+        <div className="row">
+          <NotificationCenter />
+          <Link href="/app/settings" className="link">
+            Settings
+          </Link>
+        </div>
       </div>
       <p className="muted">
         Your shared space for staying close across the distance.
@@ -67,6 +74,11 @@ function Dashboard() {
       {me?.couple && showVisits && <NextVisitWidget />}
       {/* Rituals are couple-scoped too. */}
       {me?.couple && showRituals && <RitualsSection />}
+      {/* Bucket list is couple-scoped too. */}
+      {me?.couple && <BucketListSection />}
+      {/* Letters and the memory timeline are couple-scoped. */}
+      {me?.couple && <LettersSection />}
+      {me?.couple && <MemoriesTimeline />}
       <button type="button" onClick={logout}>
         Sign out
       </button>

@@ -6,6 +6,7 @@ from sqlalchemy import select
 from app.api.deps import CurrentCouple, DbSession
 from app.models import Milestone, Visit
 from app.schemas.milestone import MilestoneCreate, MilestoneOut, MilestoneUpdate
+from app.services import memories as memory_service
 
 router = APIRouter(prefix="/milestones", tags=["milestones"])
 
@@ -58,8 +59,12 @@ def update_milestone(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Milestone not found"
         )
+    was_done = milestone.status == "done"
     for field, value in payload.model_dump(exclude_unset=True).items():
         setattr(milestone, field, value)
+    # Checking a milestone off for the first time records a timeline memory.
+    if milestone.status == "done" and not was_done:
+        memory_service.record_milestone_done(db, milestone)
     db.commit()
     db.refresh(milestone)
     return milestone
