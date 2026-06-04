@@ -6,15 +6,15 @@ from fastapi.testclient import TestClient
 
 from tests.conftest import register_and_login
 
-LETTERS = "/api/letters"
+LETTERS = "/api/v1/letters"
 
 
 def _pair(client: TestClient) -> tuple[dict, dict]:
     """Register two partners in one couple; return (alex_headers, sam_headers)."""
     alex = register_and_login(client, "alex@example.com", "Alex")
     sam = register_and_login(client, "sam@example.com", "Sam", with_couple=False)
-    code = client.post("/api/couples/invites", headers=alex).json()["code"]
-    client.post("/api/couples/join", json={"code": code}, headers=sam)
+    code = client.post("/api/v1/couples/invites", headers=alex).json()["code"]
+    client.post("/api/v1/couples/join", json={"code": code}, headers=sam)
     return alex, sam
 
 
@@ -34,9 +34,7 @@ def test_letters_require_a_couple(client: TestClient) -> None:
 
 def test_letter_defaults_to_partner_and_unlocked_now(client: TestClient) -> None:
     alex, sam = _pair(client)
-    r = client.post(
-        LETTERS, json={"title": "Hello", "body": "Thinking of you"}, headers=alex
-    )
+    r = client.post(LETTERS, json={"title": "Hello", "body": "Thinking of you"}, headers=alex)
     assert r.status_code == 201, r.text
     body = r.json()
     assert body["direction"] == "sent"
@@ -90,9 +88,7 @@ def test_cannot_open_locked_letter(client: TestClient) -> None:
 
 def test_open_unlocked_letter_marks_it_opened(client: TestClient) -> None:
     alex, sam = _pair(client)
-    lid = client.post(
-        LETTERS, json={"title": "Hi", "body": "open me"}, headers=alex
-    ).json()["id"]
+    lid = client.post(LETTERS, json={"title": "Hi", "body": "open me"}, headers=alex).json()["id"]
 
     r = client.post(f"{LETTERS}/{lid}/open", headers=sam)
     assert r.status_code == 200, r.text
@@ -105,9 +101,7 @@ def test_open_unlocked_letter_marks_it_opened(client: TestClient) -> None:
 
 def test_only_recipient_can_open(client: TestClient) -> None:
     alex, sam = _pair(client)
-    lid = client.post(
-        LETTERS, json={"title": "Hi", "body": "mine"}, headers=alex
-    ).json()["id"]
+    lid = client.post(LETTERS, json={"title": "Hi", "body": "mine"}, headers=alex).json()["id"]
     # The sender is not the recipient; opening 404s rather than leaking state.
     assert client.post(f"{LETTERS}/{lid}/open", headers=alex).status_code == 404
 
@@ -115,7 +109,7 @@ def test_only_recipient_can_open(client: TestClient) -> None:
 def test_explicit_recipient_must_be_in_couple(client: TestClient) -> None:
     alex, _sam = _pair(client)
     outsider = register_and_login(client, "pat@example.com", "Pat")
-    me = client.get("/api/auth/me", headers=outsider).json()
+    me = client.get("/api/v1/auth/me", headers=outsider).json()
     r = client.post(
         LETTERS,
         json={"title": "x", "body": "y", "to_user_id": me["id"]},

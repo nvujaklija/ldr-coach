@@ -5,19 +5,19 @@ from sqlalchemy.orm import Session
 
 from app.models import Couple, CoupleMember, User
 
-REGISTER = "/api/auth/register"
-LOGIN = "/api/auth/login"
-TODAY = "/api/checkins/today"
-LIST = "/api/checkins"
+REGISTER = "/api/v1/auth/register"
+LOGIN = "/api/v1/auth/login"
+TODAY = "/api/v1/checkins/today"
+LIST = "/api/v1/checkins"
 
 
 def _auth(client: TestClient, email: str) -> dict[str, str]:
     """Register + login a user, returning an Authorization header."""
     creds = {"email": email, "password": "supersecret", "display_name": email[:5]}
     client.post(REGISTER, json=creds)
-    token = client.post(
-        LOGIN, data={"username": email, "password": "supersecret"}
-    ).json()["access_token"]
+    token = client.post(LOGIN, data={"username": email, "password": "supersecret"}).json()[
+        "access_token"
+    ]
     return {"Authorization": f"Bearer {token}"}
 
 

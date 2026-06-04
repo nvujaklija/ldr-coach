@@ -28,28 +28,46 @@ class TemplateSeed:
 # picked up by both the seed migration and the test fixture via the same list.
 DEFAULT_RITUAL_TEMPLATES: tuple[TemplateSeed, ...] = (
     TemplateSeed(
-        "movie_night", "Movie Night",
-        "Press play at the same time and watch a film together.", "weekly", "🎬",
+        "movie_night",
+        "Movie Night",
+        "Press play at the same time and watch a film together.",
+        "weekly",
+        "🎬",
     ),
     TemplateSeed(
-        "game_night", "Game Night",
-        "Hop on a call and play your favourite online game.", "weekly", "🎮",
+        "game_night",
+        "Game Night",
+        "Hop on a call and play your favourite online game.",
+        "weekly",
+        "🎮",
     ),
     TemplateSeed(
-        "parallel_walk", "Parallel Walk",
-        "Go for a walk at the same time and talk along the way.", "weekly", "🚶",
+        "parallel_walk",
+        "Parallel Walk",
+        "Go for a walk at the same time and talk along the way.",
+        "weekly",
+        "🚶",
     ),
     TemplateSeed(
-        "cook_together", "Cook Together",
-        "Make the same recipe over video and eat together.", "weekly", "🍳",
+        "cook_together",
+        "Cook Together",
+        "Make the same recipe over video and eat together.",
+        "weekly",
+        "🍳",
     ),
     TemplateSeed(
-        "morning_coffee", "Morning Coffee",
-        "Start the day with a shared coffee on video.", "daily", "☕",
+        "morning_coffee",
+        "Morning Coffee",
+        "Start the day with a shared coffee on video.",
+        "daily",
+        "☕",
     ),
     TemplateSeed(
-        "monthly_date", "Monthly Date Night",
-        "A dressed-up virtual date to look forward to each month.", "monthly", "🌹",
+        "monthly_date",
+        "Monthly Date Night",
+        "A dressed-up virtual date to look forward to each month.",
+        "monthly",
+        "🌹",
     ),
 )
 

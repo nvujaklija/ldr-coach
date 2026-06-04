@@ -12,10 +12,10 @@ from sqlalchemy.orm import Session
 from app.models import MemoryItem
 from tests.conftest import register_and_login
 
-MEMORIES = "/api/memories"
-VISITS = "/api/visits"
-MILESTONES = "/api/milestones"
-RITUALS = "/api/rituals"
+MEMORIES = "/api/v1/memories"
+VISITS = "/api/v1/visits"
+MILESTONES = "/api/v1/milestones"
+RITUALS = "/api/v1/rituals"
 
 
 def test_memories_require_auth(client: TestClient) -> None:
@@ -41,8 +41,7 @@ def test_create_and_list_memory(client: TestClient, auth_headers: dict) -> None:
 
 def test_invalid_type_rejected(client: TestClient, auth_headers: dict) -> None:
     assert (
-        client.post(MEMORIES, json={"type": "voicemail"}, headers=auth_headers).status_code
-        == 422
+        client.post(MEMORIES, json={"type": "voicemail"}, headers=auth_headers).status_code == 422
     )
 
 
@@ -51,7 +50,7 @@ def test_list_is_newest_first_and_paged(
 ) -> None:
     # Seed rows with distinct, increasing created_at so newest-first ordering
     # is unambiguous (CURRENT_TIMESTAMP alone ties at one-second granularity).
-    couple_id = client.get("/api/auth/me", headers=auth_headers).json()["couple"]["id"]
+    couple_id = client.get("/api/v1/auth/me", headers=auth_headers).json()["couple"]["id"]
     base = datetime(2026, 1, 1, tzinfo=UTC)
     for i in range(5):
         db.add(
@@ -96,9 +95,7 @@ def test_completed_visit_creates_a_memory(client: TestClient, auth_headers: dict
     assert mems[0]["created_by_id"] is None
 
 
-def test_completing_visit_twice_records_one_memory(
-    client: TestClient, auth_headers: dict
-) -> None:
+def test_completing_visit_twice_records_one_memory(client: TestClient, auth_headers: dict) -> None:
     vid = client.post(
         VISITS,
         json={"location": "Lisbon", "start_date": date.today().isoformat()},
@@ -111,9 +108,7 @@ def test_completing_visit_twice_records_one_memory(
 
 
 def test_done_milestone_creates_a_memory(client: TestClient, auth_headers: dict) -> None:
-    mid = client.post(
-        MILESTONES, json={"title": "Book flights"}, headers=auth_headers
-    ).json()["id"]
+    mid = client.post(MILESTONES, json={"title": "Book flights"}, headers=auth_headers).json()["id"]
     client.patch(f"{MILESTONES}/{mid}", json={"status": "done"}, headers=auth_headers)
 
     mems = client.get(MEMORIES, headers=auth_headers).json()
@@ -123,19 +118,19 @@ def test_done_milestone_creates_a_memory(client: TestClient, auth_headers: dict)
     assert "Book flights" in mems[0]["data"]["title"]
 
 
-def test_done_ritual_occurrence_creates_a_memory(
-    client: TestClient, auth_headers: dict
-) -> None:
+def test_done_ritual_occurrence_creates_a_memory(client: TestClient, auth_headers: dict) -> None:
     created = client.post(
         RITUALS,
-        json={"title": "Movie Night", "cadence": "daily",
-              "time_of_day": "20:00", "timezone": "UTC"},
+        json={
+            "title": "Movie Night",
+            "cadence": "daily",
+            "time_of_day": "20:00",
+            "timezone": "UTC",
+        },
         headers=auth_headers,
     ).json()
     rid, iid = created["id"], created["next_instance"]["id"]
-    client.patch(
-        f"{RITUALS}/{rid}/instances/{iid}", json={"status": "done"}, headers=auth_headers
-    )
+    client.patch(f"{RITUALS}/{rid}/instances/{iid}", json={"status": "done"}, headers=auth_headers)
 
     mems = client.get(MEMORIES, headers=auth_headers).json()
     assert len(mems) == 1

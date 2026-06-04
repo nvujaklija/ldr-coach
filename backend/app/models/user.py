@@ -23,12 +23,6 @@ class User(UUIDMixin, TimestampMixin, Base):
     theme: Mapped[str] = mapped_column(String(20), default="system", nullable=False)
     # Notification toggles. There is no delivery channel yet, but the
     # preferences are captured now so the toggles surface in settings.
-    notify_checkin_reminders: Mapped[bool] = mapped_column(
-        Boolean, default=True, nullable=False
-    )
-    notify_visit_reminders: Mapped[bool] = mapped_column(
-        Boolean, default=True, nullable=False
-    )
-    notify_ritual_reminders: Mapped[bool] = mapped_column(
-        Boolean, default=True, nullable=False
-    )
+    notify_checkin_reminders: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    notify_visit_reminders: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    notify_ritual_reminders: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)

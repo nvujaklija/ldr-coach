@@ -87,18 +87,18 @@ users ──< couple_members >── couples ──< visits
 - **rituals** — recurring shared activities (cadence + description).
 - **check_ins** — per-user daily mood/connection check-ins (1–5 scores,
   tags, optional note); one row per user per day, scoped to the couple when
-  matched. Endpoints: `POST /api/checkins/today` (idempotent upsert),
-  `GET /api/checkins?days=N` (recent check-ins + rolling averages).
+  matched. Endpoints: `POST /api/v1/checkins/today` (idempotent upsert),
+  `GET /api/v1/checkins?days=N` (recent check-ins + rolling averages).
 - **letters** — time-released messages from one partner to the other
   (`from_user`/`to_user`, `visible_from`, title, body, `is_opened`). The API is
   the gatekeeper: a locked letter's body is never serialized to its recipient
   before `visible_from`; the sender always sees their own. Endpoints:
-  `POST /api/letters`, `GET /api/letters?box=inbox|sent`,
-  `POST /api/letters/{id}/open`.
+  `POST /api/v1/letters`, `GET /api/v1/letters?box=inbox|sent`,
+  `POST /api/v1/letters/{id}/open`.
 - **memory_items** — the couple's shared timeline. Each row is a `type`
   (`photo`/`note`/`ritual`/`visit`) plus a free-form `data` JSON blob, so the
   timeline holds heterogeneous moments without a table per kind. Endpoints:
-  `GET /api/memories?limit=&offset=` (newest first, paged), `POST /api/memories`.
+  `GET /api/v1/memories?limit=&offset=` (newest first, paged), `POST /api/v1/memories`.
 - **notifications** — per-user in-app notifications. `trigger_at` is when the
   item becomes visible (reminders are generated ahead of time); `read_at`
   tracks read state; `payload` (JSON) deep-links to the visit/ritual; a unique
@@ -109,8 +109,8 @@ users ──< couple_members >── couples ──< visits
 - **settings** — not a table; a single `/api/settings` resource bundling the
   per-user preference columns on **users** (timezone, theme, notification
   toggles) and the shared settings columns on **couples** (relationship start
-  date, dashboard module visibility). `GET /api/settings` returns both scopes
-  (the couple scope is null until onboarding); `PUT /api/settings` applies
+  date, dashboard module visibility). `GET /api/v1/settings` returns both scopes
+  (the couple scope is null until onboarding); `PUT /api/v1/settings` applies
   partial updates to either scope. Module visibility flags drive which sections
   render on the dashboard.
 
@@ -147,7 +147,7 @@ timestamps. Foreign keys cascade on delete. Schema changes go through Alembic
 
 ## Request flow (example: login)
 
-1. Browser POSTs `/api/auth/login` → nginx → `backend:8000`.
+1. Browser POSTs `/api/v1/auth/login` → nginx → `backend:8000`.
 2. FastAPI validates the form, looks up the user, verifies the bcrypt hash.
 3. On success, returns a signed JWT; the client sends it as a Bearer token.
 4. Protected routes resolve the user via `get_current_user` (`api/deps.py`).

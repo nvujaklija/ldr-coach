@@ -6,8 +6,8 @@ from fastapi.testclient import TestClient
 
 from tests.conftest import register_and_login
 
-VISITS = "/api/visits"
-BUCKET = "/api/bucket-items"
+VISITS = "/api/v1/visits"
+BUCKET = "/api/v1/bucket-items"
 
 
 def _make_visit(client: TestClient, headers: dict) -> str:
@@ -25,7 +25,8 @@ def test_bucket_items_require_auth(client: TestClient) -> None:
 
 def test_create_list_and_default_status(client: TestClient, auth_headers: dict) -> None:
     r = client.post(
-        BUCKET, json={"title": "Hot air balloon ride", "category": "Experience"},
+        BUCKET,
+        json={"title": "Hot air balloon ride", "category": "Experience"},
         headers=auth_headers,
     )
     assert r.status_code == 201, r.text
@@ -41,7 +42,8 @@ def test_create_list_and_default_status(client: TestClient, auth_headers: dict) 
 def test_link_to_visit_on_create(client: TestClient, auth_headers: dict) -> None:
     visit_id = _make_visit(client, auth_headers)
     r = client.post(
-        BUCKET, json={"title": "Lake Como day", "target_visit_id": visit_id},
+        BUCKET,
+        json={"title": "Lake Como day", "target_visit_id": visit_id},
         headers=auth_headers,
     )
     assert r.status_code == 201, r.text
@@ -62,24 +64,26 @@ def test_progress_through_statuses(client: TestClient, auth_headers: dict) -> No
 
 def test_invalid_status_rejected(client: TestClient, auth_headers: dict) -> None:
     item_id = client.post(BUCKET, json={"title": "x"}, headers=auth_headers).json()["id"]
-    assert client.patch(
-        f"{BUCKET}/{item_id}", json={"status": "bogus"}, headers=auth_headers
-    ).status_code == 422
+    assert (
+        client.patch(
+            f"{BUCKET}/{item_id}", json={"status": "bogus"}, headers=auth_headers
+        ).status_code
+        == 422
+    )
 
 
 def test_cannot_link_to_another_couples_visit(client: TestClient, auth_headers: dict) -> None:
     visit_id = _make_visit(client, auth_headers)
     other = register_and_login(client, "sam@example.com", "Sam")
-    r = client.post(
-        BUCKET, json={"title": "sneaky", "target_visit_id": visit_id}, headers=other
-    )
+    r = client.post(BUCKET, json={"title": "sneaky", "target_visit_id": visit_id}, headers=other)
     assert r.status_code == 404
 
 
 def test_couple_isolation(client: TestClient, auth_headers: dict) -> None:
     item_id = client.post(BUCKET, json={"title": "Mine"}, headers=auth_headers).json()["id"]
     other = register_and_login(client, "sam@example.com", "Sam")
-    assert client.patch(
-        f"{BUCKET}/{item_id}", json={"status": "done"}, headers=other
-    ).status_code == 404
+    assert (
+        client.patch(f"{BUCKET}/{item_id}", json={"status": "done"}, headers=other).status_code
+        == 404
+    )
     assert client.get(BUCKET, headers=other).json() == []

@@ -81,14 +81,10 @@ def mark_all_read(db: DbSession, current_user: CurrentUser) -> NotificationList:
 
 
 @router.post("/{notification_id}/read", response_model=NotificationOut)
-def mark_read(
-    notification_id: str, db: DbSession, current_user: CurrentUser
-) -> Notification:
+def mark_read(notification_id: str, db: DbSession, current_user: CurrentUser) -> Notification:
     notification = db.get(Notification, notification_id)
     if notification is None or notification.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Notification not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Notification not found")
     if notification.read_at is None:
         notification.read_at = datetime.now(UTC)
         db.commit()

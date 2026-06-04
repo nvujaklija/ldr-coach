@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 
 from tests.conftest import register_and_login
 
-SETTINGS = "/api/settings"
+SETTINGS = "/api/v1/settings"
 
 
 def test_settings_require_auth(client: TestClient) -> None:
@@ -40,8 +40,9 @@ def test_solo_user_has_no_couple_settings(client: TestClient) -> None:
 def test_update_user_preferences(client: TestClient, auth_headers: dict) -> None:
     r = client.put(
         SETTINGS,
-        json={"user": {"timezone": "Europe/Rome", "theme": "dark",
-                       "notify_visit_reminders": False}},
+        json={
+            "user": {"timezone": "Europe/Rome", "theme": "dark", "notify_visit_reminders": False}
+        },
         headers=auth_headers,
     )
     assert r.status_code == 200, r.text
@@ -76,9 +77,9 @@ def test_partner_sees_shared_couple_settings(client: TestClient, auth_headers: d
         headers=auth_headers,
     )
     # Second partner joins the same couple via an invite.
-    code = client.post("/api/couples/invites", headers=auth_headers).json()["code"]
+    code = client.post("/api/v1/couples/invites", headers=auth_headers).json()["code"]
     partner = register_and_login(client, "sam@example.com", "Sam", with_couple=False)
-    client.post("/api/couples/join", json={"code": code}, headers=partner)
+    client.post("/api/v1/couples/join", json={"code": code}, headers=partner)
 
     body = client.get(SETTINGS, headers=partner).json()
     assert body["couple"]["relationship_start_date"] == "2019-07-01"

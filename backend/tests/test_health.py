@@ -8,12 +8,12 @@ client = TestClient(app)
 
 
 def test_health() -> None:
-    resp = client.get("/api/health")
+    resp = client.get("/api/v1/health")
     assert resp.status_code == 200
     assert resp.json() == {"status": "ok"}
 
 
 def test_ping() -> None:
-    resp = client.get("/api/ping")
+    resp = client.get("/api/v1/ping")
     assert resp.status_code == 200
     assert resp.json() == {"message": "pong"}

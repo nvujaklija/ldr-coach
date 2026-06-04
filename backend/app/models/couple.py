@@ -59,6 +59,4 @@ class CoupleInvite(UUIDMixin, TimestampMixin, Base):
     accepted_by_id: Mapped[str | None] = mapped_column(
         ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
-    accepted_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    accepted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

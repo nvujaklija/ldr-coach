@@ -16,8 +16,8 @@ from app.models import (
 from app.services import notifications as svc
 from tests.conftest import register_and_login
 
-NOTIFS = "/api/notifications"
-PREFS = "/api/notifications/preferences"
+NOTIFS = "/api/v1/notifications"
+PREFS = "/api/v1/notifications/preferences"
 
 
 # --- helpers -------------------------------------------------------------
@@ -166,10 +166,12 @@ def test_generate_ritual_reminders(client: TestClient, db: Session) -> None:
     # Create a ritual through the API so an instance is materialized.
     headers = register_and_login(client, "alex@example.com", "Alex")
     client.post(
-        "/api/rituals",
+        "/api/v1/rituals",
         json={
-            "title": "Movie Night", "cadence": "daily",
-            "time_of_day": "20:00", "timezone": "UTC",
+            "title": "Movie Night",
+            "cadence": "daily",
+            "time_of_day": "20:00",
+            "timezone": "UTC",
         },
         headers=headers,
     )
@@ -210,7 +212,10 @@ def test_list_returns_only_due_notifications(client: TestClient, db: Session) ->
     uid = _user_id(db, "alex@example.com")
     _seed_notification(db, uid, title="Due now", dedup_key="a")
     _seed_notification(
-        db, uid, title="Future", dedup_key="b",
+        db,
+        uid,
+        title="Future",
+        dedup_key="b",
         trigger_at=datetime.now(UTC) + timedelta(days=1),
     )
 

@@ -1,7 +1,7 @@
 // Thin API client. The base URL comes from the environment so the same
 // build works across deploys (12-factor). In the browser, requests go to
-// the reverse proxy at /api by default.
-export const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "/api";
+// the reverse proxy at /api/v1 by default (the versioned API prefix).
+export const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "/api/v1";
 
 export interface HealthResponse {
   status: string;

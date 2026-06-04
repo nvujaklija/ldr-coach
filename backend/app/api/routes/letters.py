@@ -59,9 +59,7 @@ def _name_map(db: DbSession, letters: list[Letter]) -> dict[str, str]:
     ids = {lt.from_user_id for lt in letters} | {lt.to_user_id for lt in letters}
     if not ids:
         return {}
-    rows = db.execute(
-        select(User.id, User.display_name).where(User.id.in_(ids))
-    ).all()
+    rows = db.execute(select(User.id, User.display_name).where(User.id.in_(ids))).all()
     return {uid: name for uid, name in rows}
 
 
@@ -79,13 +77,9 @@ def list_letters(
     """
     stmt = select(Letter).where(Letter.couple_id == couple.id)
     if box == "sent":
-        stmt = stmt.where(Letter.from_user_id == user.id).order_by(
-            Letter.created_at.desc()
-        )
+        stmt = stmt.where(Letter.from_user_id == user.id).order_by(Letter.created_at.desc())
     else:
-        stmt = stmt.where(Letter.to_user_id == user.id).order_by(
-            Letter.visible_from.asc()
-        )
+        stmt = stmt.where(Letter.to_user_id == user.id).order_by(Letter.visible_from.asc())
     letters = list(db.scalars(stmt))
     names = _name_map(db, letters)
     return [_to_out(lt, viewer_id=user.id, names=names) for lt in letters]
@@ -99,9 +93,7 @@ def create_letter(
     # member) wins; otherwise default to the partner, falling back to self for
     # a solo user writing to their future self.
     if payload.to_user_id is not None:
-        member_ids = {
-            m.user_id for m in couple_service.list_members(db, couple.id)
-        }
+        member_ids = {m.user_id for m in couple_service.list_members(db, couple.id)}
         if payload.to_user_id not in member_ids:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,

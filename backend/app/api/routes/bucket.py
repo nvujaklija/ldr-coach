@@ -58,9 +58,7 @@ def update_bucket_item(
 ) -> BucketItem:
     item = db.get(BucketItem, item_id)
     if item is None or item.couple_id != couple.id:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Bucket item not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Bucket item not found")
     data = payload.model_dump(exclude_unset=True)
     if data.get("target_visit_id") is not None:
         _assert_visit_in_couple(db, data["target_visit_id"], couple.id)

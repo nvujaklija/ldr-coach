@@ -88,9 +88,7 @@ def ritual_reminder_trigger(scheduled_for: datetime, timezone: str | None) -> da
 
 
 def _member_ids(db: Session, couple_id: str) -> list[str]:
-    return list(
-        db.scalars(select(CoupleMember.user_id).where(CoupleMember.couple_id == couple_id))
-    )
+    return list(db.scalars(select(CoupleMember.user_id).where(CoupleMember.couple_id == couple_id)))
 
 
 def _add_if_absent(

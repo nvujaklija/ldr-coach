@@ -1,20 +1,15 @@
-"""Milestone routes: per-visit checklist items for the current couple."""
+"""Milestone routes: per-visit checklist items for the current couple.
+
+Domain logic lives in ``app.services.milestones``; this module is HTTP only.
+"""
 
 from fastapi import APIRouter, HTTPException, Query, status
-from sqlalchemy import select
 
 from app.api.deps import CurrentCouple, DbSession
-from app.models import Milestone, Visit
 from app.schemas.milestone import MilestoneCreate, MilestoneOut, MilestoneUpdate
-from app.services import memories as memory_service
+from app.services import milestones as milestone_service
 
 router = APIRouter(prefix="/milestones", tags=["milestones"])
-
-
-def _assert_visit_in_couple(db: DbSession, visit_id: str, couple_id: str) -> None:
-    visit = db.get(Visit, visit_id)
-    if visit is None or visit.couple_id != couple_id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Visit not found")
 
 
 @router.get("", response_model=list[MilestoneOut])
@@ -22,49 +17,27 @@ def list_milestones(
     db: DbSession,
     couple: CurrentCouple,
     visit_id: str | None = Query(default=None, alias="visitId"),
-) -> list[Milestone]:
-    stmt = select(Milestone).where(Milestone.couple_id == couple.id)
-    if visit_id is not None:
-        stmt = stmt.where(Milestone.visit_id == visit_id)
-    stmt = stmt.order_by(Milestone.created_at.asc())
-    return list(db.scalars(stmt))
+) -> list[MilestoneOut]:
+    return milestone_service.list_for_couple(db, couple.id, visit_id)
 
 
 @router.post("", response_model=MilestoneOut, status_code=status.HTTP_201_CREATED)
 def create_milestone(
     payload: MilestoneCreate, db: DbSession, couple: CurrentCouple
-) -> Milestone:
-    if payload.visit_id is not None:
-        _assert_visit_in_couple(db, payload.visit_id, couple.id)
-    milestone = Milestone(
-        couple_id=couple.id,
-        visit_id=payload.visit_id,
-        title=payload.title,
-        due_date=payload.due_date,
-        notes=payload.notes,
-        status="todo",
-    )
-    db.add(milestone)
-    db.commit()
-    db.refresh(milestone)
-    return milestone
+) -> MilestoneOut:
+    if payload.visit_id is not None and not milestone_service.visit_belongs_to_couple(
+        db, payload.visit_id, couple.id
+    ):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Visit not found")
+    return milestone_service.create_milestone(db, couple.id, payload)
 
 
 @router.patch("/{milestone_id}", response_model=MilestoneOut)
 def update_milestone(
     milestone_id: str, payload: MilestoneUpdate, db: DbSession, couple: CurrentCouple
-) -> Milestone:
-    milestone = db.get(Milestone, milestone_id)
-    if milestone is None or milestone.couple_id != couple.id:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Milestone not found"
-        )
-    was_done = milestone.status == "done"
-    for field, value in payload.model_dump(exclude_unset=True).items():
-        setattr(milestone, field, value)
-    # Checking a milestone off for the first time records a timeline memory.
-    if milestone.status == "done" and not was_done:
-        memory_service.record_milestone_done(db, milestone)
-    db.commit()
-    db.refresh(milestone)
-    return milestone
+) -> MilestoneOut:
+    milestone = milestone_service.get_owned_milestone(db, milestone_id, couple.id)
+    if milestone is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Milestone not found")
+    data = payload.model_dump(exclude_unset=True)
+    return milestone_service.apply_update(db, milestone, data)

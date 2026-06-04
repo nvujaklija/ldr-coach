@@ -37,10 +37,13 @@ def get_couple_for_user(db: Session, user_id: str) -> Couple | None:
     return db.get(Couple, membership.couple_id)
 
 
+def member_user_ids(db: Session, couple_id: str) -> list[str]:
+    """The user ids of everyone in the couple (one or both partners)."""
+    return list(db.scalars(select(CoupleMember.user_id).where(CoupleMember.couple_id == couple_id)))
+
+
 def list_members(db: Session, couple_id: str) -> list[CoupleMember]:
-    return list(
-        db.scalars(select(CoupleMember).where(CoupleMember.couple_id == couple_id))
-    )
+    return list(db.scalars(select(CoupleMember).where(CoupleMember.couple_id == couple_id)))
 
 
 def get_partner(db: Session, couple_id: str, user_id: str) -> User | None:
