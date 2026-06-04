@@ -1,10 +1,15 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import CheckInCard from "@/components/CheckInCard";
+import * as api from "@/lib/api";
 
-function jsonResponse(body: unknown, ok = true, statusCode = 200) {
-  return { ok, status: statusCode, json: async () => body } as Response;
-}
+vi.mock("@/lib/api");
+// The card reads the token from the auth context.
+vi.mock("@/lib/auth", () => ({
+  useAuth: () => ({ token: "test-token" }),
+}));
+
+const mockedApi = vi.mocked(api);
 
 const EMPTY_LIST = {
   check_ins: [],
@@ -29,25 +34,11 @@ const POPULATED_LIST = {
 
 describe("CheckInCard", () => {
   beforeEach(() => {
-    vi.restoreAllMocks();
-    window.localStorage.clear();
-  });
-
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
-  it("prompts to sign in when there is no token", async () => {
-    window.localStorage.removeItem("ldr_token");
-    render(<CheckInCard />);
-    await waitFor(() =>
-      expect(screen.getByText(/Sign in to record/i)).toBeInTheDocument(),
-    );
+    vi.clearAllMocks();
   });
 
   it("shows the 7-day averages once loaded", async () => {
-    window.localStorage.setItem("ldr_token", "tok");
-    vi.stubGlobal("fetch", vi.fn(async () => jsonResponse(POPULATED_LIST)));
+    mockedApi.getCheckIns.mockResolvedValue(POPULATED_LIST);
 
     render(<CheckInCard />);
     await waitFor(() =>
@@ -55,19 +46,14 @@ describe("CheckInCard", () => {
         "mood 4.0 · connection 5.0",
       ),
     );
+    expect(mockedApi.getCheckIns).toHaveBeenCalledWith("test-token", 7);
   });
 
-  it("submits today's check-in and refreshes", async () => {
-    window.localStorage.setItem("ldr_token", "tok");
-
-    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
-      if (init?.method === "POST") {
-        return jsonResponse(POPULATED_LIST.check_ins[0], true, 201);
-      }
-      // First GET is empty; after submit, return the populated list.
-      return jsonResponse(fetchMock.mock.calls.length > 1 ? POPULATED_LIST : EMPTY_LIST);
-    });
-    vi.stubGlobal("fetch", fetchMock as unknown as typeof fetch);
+  it("submits today's check-in and refreshes the averages", async () => {
+    mockedApi.getCheckIns
+      .mockResolvedValueOnce(EMPTY_LIST)
+      .mockResolvedValue(POPULATED_LIST);
+    mockedApi.submitTodayCheckIn.mockResolvedValue(POPULATED_LIST.check_ins[0]);
 
     render(<CheckInCard />);
     await waitFor(() => screen.getByText(/No check-ins yet this week/i));
@@ -79,15 +65,11 @@ describe("CheckInCard", () => {
     await waitFor(() =>
       expect(screen.getByText("Check-in saved.")).toBeInTheDocument(),
     );
-
-    // POST body carried the selected scores.
-    const postCall = fetchMock.mock.calls.find(
-      ([, init]) => (init as RequestInit | undefined)?.method === "POST",
-    );
-    expect(postCall).toBeDefined();
-    expect(JSON.parse((postCall![1] as RequestInit).body as string)).toMatchObject({
+    expect(mockedApi.submitTodayCheckIn).toHaveBeenCalledWith("test-token", {
       mood_score: 4,
       connection_score: 5,
+      tags: [],
+      note: null,
     });
     await waitFor(() =>
       expect(screen.getByTestId("averages")).toBeInTheDocument(),
@@ -95,8 +77,7 @@ describe("CheckInCard", () => {
   });
 
   it("disables submit until both scores are chosen", async () => {
-    window.localStorage.setItem("ldr_token", "tok");
-    vi.stubGlobal("fetch", vi.fn(async () => jsonResponse(EMPTY_LIST)));
+    mockedApi.getCheckIns.mockResolvedValue(EMPTY_LIST);
 
     render(<CheckInCard />);
     await waitFor(() => screen.getByText(/No check-ins yet this week/i));

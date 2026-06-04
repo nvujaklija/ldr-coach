@@ -29,3 +29,176 @@ main {
   margin: 0 auto;
   padding: 4rem 1.5rem;
 }
+
+a {
+  color: var(--accent);
+}
+
+.card {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 360px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.field label {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+input,
+select,
+textarea {
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #2c2f4d;
+  background: #12132a;
+  color: var(--text);
+  font-size: 1rem;
+}
+
+button {
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent);
+  color: #1a1020;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+button.link {
+  background: none;
+  color: var(--accent);
+  padding: 0;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+button.ghost {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid #2c2f52;
+}
+
+.error {
+  color: #ff8b8b;
+  font-size: 0.9rem;
+  margin: 0.5rem 0;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.countdown {
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+}
+
+ul.milestones {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+ul.milestones li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.25rem;
+  border-bottom: 1px solid #23264a;
+}
+
+ul.milestones li.done span.title {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+.row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 1.25rem;
+  letter-spacing: 0.15em;
+  background: #12132a;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  display: inline-block;
+}
+
+/* Check-in mood/connection scales and tag chips. */
+.scale {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.scale legend {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 0.4rem;
+}
+
+.scale .row {
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+button.chip {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid #2c2f52;
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  font-weight: 500;
+}
+
+button.chip.selected {
+  border-color: var(--accent);
+  background: rgba(255, 107, 139, 0.15);
+  color: var(--text);
+}

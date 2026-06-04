@@ -7,45 +7,219 @@ export interface HealthResponse {
   status: string;
 }
 
-export async function getHealth(): Promise<HealthResponse> {
-  const res = await fetch(`${API_BASE}/health`, { cache: "no-store" });
+export interface User {
+  id: string;
+  email: string;
+  display_name: string;
+}
+
+export interface Member {
+  user_id: string;
+  display_name: string;
+  role: string;
+}
+
+export interface Couple {
+  id: string;
+  name: string;
+  members: Member[];
+}
+
+export interface Me extends User {
+  couple: Couple | null;
+}
+
+export interface TokenResponse {
+  access_token: string;
+  token_type: string;
+}
+
+export interface Invite {
+  code: string;
+  invite_url: string;
+  expires_at: string;
+  accepted: boolean;
+}
+
+/** Error carrying the HTTP status and the API's human-readable detail. */
+export class ApiError extends Error {
+  status: number;
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
+async function parseError(res: Response): Promise<ApiError> {
+  let detail = res.statusText || "Request failed";
+  try {
+    const body = await res.json();
+    if (typeof body?.detail === "string") {
+      detail = body.detail;
+    } else if (Array.isArray(body?.detail) && body.detail[0]?.msg) {
+      // FastAPI validation errors come back as a list of issues.
+      detail = body.detail[0].msg;
+    }
+  } catch {
+    // Non-JSON error body; keep the status text.
+  }
+  return new ApiError(res.status, detail);
+}
+
+interface RequestOptions {
+  method?: string;
+  token?: string;
+  json?: unknown;
+  form?: Record<string, string>;
+}
+
+async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
+  const headers: Record<string, string> = {};
+  let body: BodyInit | undefined;
+
+  if (opts.json !== undefined) {
+    headers["Content-Type"] = "application/json";
+    body = JSON.stringify(opts.json);
+  } else if (opts.form) {
+    headers["Content-Type"] = "application/x-www-form-urlencoded";
+    body = new URLSearchParams(opts.form).toString();
+  }
+  if (opts.token) {
+    headers["Authorization"] = `Bearer ${opts.token}`;
+  }
+
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: opts.method ?? "GET",
+    headers,
+    body,
+    cache: "no-store",
+  });
   if (!res.ok) {
-    throw new Error(`Health check failed: ${res.status}`);
+    throw await parseError(res);
   }
-  return res.json();
+  // 204-style empty responses are not expected here, but guard anyway.
+  return (res.status === 204 ? undefined : await res.json()) as T;
 }
 
-// --- Auth ---------------------------------------------------------------
-
-const TOKEN_KEY = "ldr_token";
-
-// The access token is persisted by the (future) login flow. Reading it here
-// keeps the API helpers usable today and ready to wire up once auth lands.
-export function getAuthToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return window.localStorage.getItem(TOKEN_KEY);
+export async function getHealth(): Promise<HealthResponse> {
+  return request<HealthResponse>("/health");
 }
 
-function authHeaders(): Record<string, string> {
-  const token = getAuthToken();
-  return token ? { Authorization: `Bearer ${token}` } : {};
+export async function register(
+  email: string,
+  password: string,
+  displayName: string,
+): Promise<User> {
+  return request<User>("/auth/register", {
+    method: "POST",
+    json: { email, password, display_name: displayName },
+  });
 }
 
-/** Raised when a request needs a signed-in user but no token is present. */
-export class NotAuthenticatedError extends Error {
-  constructor() {
-    super("Not signed in");
-    this.name = "NotAuthenticatedError";
-  }
+export async function login(email: string, password: string): Promise<string> {
+  // The backend uses the OAuth2 password form: "username" carries the email.
+  const token = await request<TokenResponse>("/auth/login", {
+    method: "POST",
+    form: { username: email, password },
+  });
+  return token.access_token;
 }
 
-// --- Check-ins ----------------------------------------------------------
+export async function getMe(token: string): Promise<Me> {
+  return request<Me>("/auth/me", { token });
+}
 
+export async function createCouple(token: string, name: string): Promise<Couple> {
+  return request<Couple>("/couples", { method: "POST", token, json: { name } });
+}
+
+export async function createInvite(token: string): Promise<Invite> {
+  return request<Invite>("/couples/invites", { method: "POST", token });
+}
+
+export async function joinCouple(token: string, code: string): Promise<Couple> {
+  return request<Couple>("/couples/join", { method: "POST", token, json: { code } });
+}
+
+// --- visits --------------------------------------------------------------
+export interface Visit {
+  id: string;
+  location: string;
+  start_date: string; // ISO date (YYYY-MM-DD)
+  end_date: string | null;
+  notes: string | null;
+  status: "planned" | "completed" | "cancelled";
+  days_until: number | null;
+}
+
+export interface VisitInput {
+  location: string;
+  start_date: string;
+  end_date?: string | null;
+  notes?: string | null;
+}
+
+export async function getNextVisit(token: string): Promise<Visit | null> {
+  return request<Visit | null>("/visits/next", { token });
+}
+
+export async function createVisit(token: string, input: VisitInput): Promise<Visit> {
+  return request<Visit>("/visits", { method: "POST", token, json: input });
+}
+
+export async function updateVisit(
+  token: string,
+  id: string,
+  patch: Partial<VisitInput & { status: Visit["status"] }>,
+): Promise<Visit> {
+  return request<Visit>(`/visits/${id}`, { method: "PATCH", token, json: patch });
+}
+
+// --- milestones ----------------------------------------------------------
+export interface Milestone {
+  id: string;
+  visit_id: string | null;
+  title: string;
+  status: "todo" | "done";
+  due_date: string | null;
+  notes: string | null;
+}
+
+export async function listMilestones(
+  token: string,
+  visitId?: string,
+): Promise<Milestone[]> {
+  const query = visitId ? `?visitId=${encodeURIComponent(visitId)}` : "";
+  return request<Milestone[]>(`/milestones${query}`, { token });
+}
+
+export async function createMilestone(
+  token: string,
+  title: string,
+  visitId?: string | null,
+): Promise<Milestone> {
+  return request<Milestone>("/milestones", {
+    method: "POST",
+    token,
+    json: { title, visit_id: visitId ?? null },
+  });
+}
+
+export async function updateMilestone(
+  token: string,
+  id: string,
+  patch: Partial<{ title: string; status: Milestone["status"] }>,
+): Promise<Milestone> {
+  return request<Milestone>(`/milestones/${id}`, { method: "PATCH", token, json: patch });
+}
+
+// --- check-ins -----------------------------------------------------------
 export interface CheckIn {
   id: string;
   user_id: string;
   couple_id: string | null;
-  date: string;
+  date: string; // ISO date (YYYY-MM-DD)
   mood_score: number;
   connection_score: number;
   tags: string[];
@@ -70,29 +244,13 @@ export interface CheckInList {
   averages: CheckInAverages;
 }
 
-export async function submitTodayCheckIn(input: CheckInInput): Promise<CheckIn> {
-  const token = getAuthToken();
-  if (!token) throw new NotAuthenticatedError();
-  const res = await fetch(`${API_BASE}/checkins/today`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...authHeaders() },
-    body: JSON.stringify(input),
-  });
-  if (!res.ok) {
-    throw new Error(`Check-in failed: ${res.status}`);
-  }
-  return res.json();
+export async function submitTodayCheckIn(
+  token: string,
+  input: CheckInInput,
+): Promise<CheckIn> {
+  return request<CheckIn>("/checkins/today", { method: "POST", token, json: input });
 }
 
-export async function getCheckIns(days = 7): Promise<CheckInList> {
-  const token = getAuthToken();
-  if (!token) throw new NotAuthenticatedError();
-  const res = await fetch(`${API_BASE}/checkins?days=${days}`, {
-    cache: "no-store",
-    headers: authHeaders(),
-  });
-  if (!res.ok) {
-    throw new Error(`Loading check-ins failed: ${res.status}`);
-  }
-  return res.json();
+export async function getCheckIns(token: string, days = 7): Promise<CheckInList> {
+  return request<CheckInList>(`/checkins?days=${days}`, { token });
 }
