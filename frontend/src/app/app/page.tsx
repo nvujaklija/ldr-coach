@@ -1,5 +1,6 @@
 "use client";
 
+import CheckInCard from "@/components/CheckInCard";
 import CoupleOnboarding from "@/components/CoupleOnboarding";
 import NextVisitWidget from "@/components/NextVisitWidget";
 import RequireAuth from "@/components/RequireAuth";
@@ -14,6 +15,8 @@ function Dashboard() {
         Your shared space for staying close across the distance.
       </p>
       <CoupleOnboarding />
+      {/* Check-ins work solo or paired, so they're always available. */}
+      <CheckInCard />
       {/* The countdown is couple-scoped, so only show it once paired up. */}
       {me?.couple && <NextVisitWidget />}
       <button type="button" onClick={logout}>

@@ -169,3 +169,36 @@ ul.milestones li.done span.title {
   border-radius: 8px;
   display: inline-block;
 }
+
+/* Check-in mood/connection scales and tag chips. */
+.scale {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.scale legend {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 0.4rem;
+}
+
+.scale .row {
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+button.chip {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid #2c2f52;
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  font-weight: 500;
+}
+
+button.chip.selected {
+  border-color: var(--accent);
+  background: rgba(255, 107, 139, 0.15);
+  color: var(--text);
+}

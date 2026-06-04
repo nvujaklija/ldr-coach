@@ -213,3 +213,44 @@ export async function updateMilestone(
 ): Promise<Milestone> {
   return request<Milestone>(`/milestones/${id}`, { method: "PATCH", token, json: patch });
 }
+
+// --- check-ins -----------------------------------------------------------
+export interface CheckIn {
+  id: string;
+  user_id: string;
+  couple_id: string | null;
+  date: string; // ISO date (YYYY-MM-DD)
+  mood_score: number;
+  connection_score: number;
+  tags: string[];
+  note: string | null;
+}
+
+export interface CheckInInput {
+  mood_score: number;
+  connection_score: number;
+  tags?: string[];
+  note?: string | null;
+}
+
+export interface CheckInAverages {
+  count: number;
+  mood_score: number | null;
+  connection_score: number | null;
+}
+
+export interface CheckInList {
+  check_ins: CheckIn[];
+  averages: CheckInAverages;
+}
+
+export async function submitTodayCheckIn(
+  token: string,
+  input: CheckInInput,
+): Promise<CheckIn> {
+  return request<CheckIn>("/checkins/today", { method: "POST", token, json: input });
+}
+
+export async function getCheckIns(token: string, days = 7): Promise<CheckInList> {
+  return request<CheckInList>(`/checkins?days=${days}`, { token });
+}

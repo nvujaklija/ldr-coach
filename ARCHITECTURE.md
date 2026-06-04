@@ -54,7 +54,8 @@ backend/app/
   schemas/           Pydantic request/response models
   services/          couples.py — membership + invite helpers shared by routes
   api/deps.py        get_db, get_current_user dependencies
-  api/routes/        health.py, auth.py, couples.py
+  api/routes/        health.py, auth.py, couples.py, visits.py, milestones.py,
+                     checkins.py
 alembic/             Migration environment + versions/
 ```
 
@@ -74,7 +75,10 @@ users ──< couple_members >── couples ──< visits
   the second partner can join the couple (code, creator, expiry, redemption).
 - **visits** — planned/past in-person visits for a couple.
 - **rituals** — recurring shared activities (cadence + description).
-- **check_ins** — per-user daily emotional check-ins (mood + message).
+- **check_ins** — per-user daily mood/connection check-ins (1–5 scores,
+  tags, optional note); one row per user per day, scoped to the couple when
+  matched. Endpoints: `POST /api/checkins/today` (idempotent upsert),
+  `GET /api/checkins?days=N` (recent check-ins + rolling averages).
 
 All tables use string UUID primary keys and `created_at`/`updated_at`
 timestamps. Foreign keys cascade on delete. Schema changes go through Alembic
