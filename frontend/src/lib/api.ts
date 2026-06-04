@@ -254,3 +254,79 @@ export async function submitTodayCheckIn(
 export async function getCheckIns(token: string, days = 7): Promise<CheckInList> {
   return request<CheckInList>(`/checkins?days=${days}`, { token });
 }
+
+// --- rituals -------------------------------------------------------------
+export type RitualCadence = "daily" | "weekly" | "monthly";
+export type RitualStatus = "active" | "paused" | "cancelled";
+
+export interface RitualTemplate {
+  key: string;
+  title: string;
+  description: string | null;
+  default_cadence: string;
+  icon: string | null;
+}
+
+export interface RitualInstance {
+  id: string;
+  scheduled_for: string; // ISO datetime (UTC)
+  status: "planned" | "done" | "cancelled";
+}
+
+export interface Ritual {
+  id: string;
+  template_key: string | null;
+  title: string;
+  cadence: RitualCadence;
+  description: string | null;
+  day_of_week: number | null; // 0=Mon … 6=Sun
+  day_of_month: number | null;
+  time_of_day: string | null; // "HH:MM"
+  timezone: string | null; // IANA
+  status: RitualStatus;
+  next_instance: RitualInstance | null;
+}
+
+export interface RitualInput {
+  template_key?: string | null;
+  title: string;
+  cadence: RitualCadence;
+  description?: string | null;
+  day_of_week?: number | null;
+  day_of_month?: number | null;
+  time_of_day?: string | null;
+  timezone?: string | null;
+}
+
+export async function listRitualTemplates(token: string): Promise<RitualTemplate[]> {
+  return request<RitualTemplate[]>("/rituals/templates", { token });
+}
+
+export async function listRituals(token: string): Promise<Ritual[]> {
+  return request<Ritual[]>("/rituals", { token });
+}
+
+export async function createRitual(token: string, input: RitualInput): Promise<Ritual> {
+  return request<Ritual>("/rituals", { method: "POST", token, json: input });
+}
+
+export async function updateRitual(
+  token: string,
+  id: string,
+  patch: Partial<RitualInput & { status: RitualStatus }>,
+): Promise<Ritual> {
+  return request<Ritual>(`/rituals/${id}`, { method: "PATCH", token, json: patch });
+}
+
+export async function updateRitualInstance(
+  token: string,
+  ritualId: string,
+  instanceId: string,
+  status: RitualInstance["status"],
+): Promise<Ritual> {
+  return request<Ritual>(`/rituals/${ritualId}/instances/${instanceId}`, {
+    method: "PATCH",
+    token,
+    json: { status },
+  });
+}
