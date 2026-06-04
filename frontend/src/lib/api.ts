@@ -401,3 +401,41 @@ export async function createMemory(
 ): Promise<MemoryItem> {
   return request<MemoryItem>("/memories", { method: "POST", token, json: { type, data } });
 }
+
+// --- bucket list ---------------------------------------------------------
+export type BucketStatus = "planned" | "in_progress" | "done";
+
+export interface BucketItem {
+  id: string;
+  title: string;
+  category: string | null;
+  target_visit_id: string | null;
+  status: BucketStatus;
+  notes: string | null;
+}
+
+export interface BucketItemInput {
+  title: string;
+  category?: string | null;
+  target_visit_id?: string | null;
+  notes?: string | null;
+}
+
+export async function listBucketItems(token: string): Promise<BucketItem[]> {
+  return request<BucketItem[]>("/bucket-items", { token });
+}
+
+export async function createBucketItem(
+  token: string,
+  input: BucketItemInput,
+): Promise<BucketItem> {
+  return request<BucketItem>("/bucket-items", { method: "POST", token, json: input });
+}
+
+export async function updateBucketItem(
+  token: string,
+  id: string,
+  patch: Partial<BucketItemInput & { status: BucketStatus }>,
+): Promise<BucketItem> {
+  return request<BucketItem>(`/bucket-items/${id}`, { method: "PATCH", token, json: patch });
+}
