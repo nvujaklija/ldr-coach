@@ -8,6 +8,9 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./vitest.setup.ts"],
+    // Ignore macOS AppleDouble sidecar files (created on some volumes); they
+    // are binary and not real tests.
+    exclude: ["**/node_modules/**", "**/._*"],
   },
   resolve: {
     alias: {

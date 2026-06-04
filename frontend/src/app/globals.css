@@ -41,6 +41,13 @@ a {
   margin: 1.5rem 0;
 }
 
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 360px;
+}
+
 .field {
   display: flex;
   flex-direction: column;
@@ -48,12 +55,22 @@ a {
   margin-bottom: 1rem;
 }
 
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
 .field label {
   font-size: 0.85rem;
   color: var(--muted);
 }
 
-input {
+input,
+select,
+textarea {
   padding: 0.6rem 0.75rem;
   border-radius: 8px;
   border: 1px solid #2c2f4d;
@@ -78,13 +95,69 @@ button:disabled {
   cursor: not-allowed;
 }
 
+button.link {
+  background: none;
+  color: var(--accent);
+  padding: 0;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+button.ghost {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid #2c2f52;
+}
+
 .error {
   color: #ff8b8b;
+  font-size: 0.9rem;
   margin: 0.5rem 0;
 }
 
 .muted {
   color: var(--muted);
+}
+
+.countdown {
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+}
+
+ul.milestones {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+ul.milestones li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.25rem;
+  border-bottom: 1px solid #23264a;
+}
+
+ul.milestones li.done span.title {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+.row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .code {

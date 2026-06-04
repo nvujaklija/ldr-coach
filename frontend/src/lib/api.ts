@@ -141,3 +141,75 @@ export async function createInvite(token: string): Promise<Invite> {
 export async function joinCouple(token: string, code: string): Promise<Couple> {
   return request<Couple>("/couples/join", { method: "POST", token, json: { code } });
 }
+
+// --- visits --------------------------------------------------------------
+export interface Visit {
+  id: string;
+  location: string;
+  start_date: string; // ISO date (YYYY-MM-DD)
+  end_date: string | null;
+  notes: string | null;
+  status: "planned" | "completed" | "cancelled";
+  days_until: number | null;
+}
+
+export interface VisitInput {
+  location: string;
+  start_date: string;
+  end_date?: string | null;
+  notes?: string | null;
+}
+
+export async function getNextVisit(token: string): Promise<Visit | null> {
+  return request<Visit | null>("/visits/next", { token });
+}
+
+export async function createVisit(token: string, input: VisitInput): Promise<Visit> {
+  return request<Visit>("/visits", { method: "POST", token, json: input });
+}
+
+export async function updateVisit(
+  token: string,
+  id: string,
+  patch: Partial<VisitInput & { status: Visit["status"] }>,
+): Promise<Visit> {
+  return request<Visit>(`/visits/${id}`, { method: "PATCH", token, json: patch });
+}
+
+// --- milestones ----------------------------------------------------------
+export interface Milestone {
+  id: string;
+  visit_id: string | null;
+  title: string;
+  status: "todo" | "done";
+  due_date: string | null;
+  notes: string | null;
+}
+
+export async function listMilestones(
+  token: string,
+  visitId?: string,
+): Promise<Milestone[]> {
+  const query = visitId ? `?visitId=${encodeURIComponent(visitId)}` : "";
+  return request<Milestone[]>(`/milestones${query}`, { token });
+}
+
+export async function createMilestone(
+  token: string,
+  title: string,
+  visitId?: string | null,
+): Promise<Milestone> {
+  return request<Milestone>("/milestones", {
+    method: "POST",
+    token,
+    json: { title, visit_id: visitId ?? null },
+  });
+}
+
+export async function updateMilestone(
+  token: string,
+  id: string,
+  patch: Partial<{ title: string; status: Milestone["status"] }>,
+): Promise<Milestone> {
+  return request<Milestone>(`/milestones/${id}`, { method: "PATCH", token, json: patch });
+}
