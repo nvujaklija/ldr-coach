@@ -10,6 +10,8 @@ from app.api.routes import (
     checkins,
     couples,
     health,
+    letters,
+    memories,
     milestones,
     rituals,
     visits,
@@ -44,6 +46,8 @@ def create_app() -> FastAPI:
     app.include_router(checkins.router, prefix=settings.API_PREFIX)
     app.include_router(rituals.router, prefix=settings.API_PREFIX)
     app.include_router(bucket.router, prefix=settings.API_PREFIX)
+    app.include_router(letters.router, prefix=settings.API_PREFIX)
+    app.include_router(memories.router, prefix=settings.API_PREFIX)
 
     return app
 

@@ -3,6 +3,8 @@
 from app.models.bucket_item import BucketItem
 from app.models.check_in import CheckIn
 from app.models.couple import Couple, CoupleInvite, CoupleMember
+from app.models.letter import Letter
+from app.models.memory_item import MemoryItem
 from app.models.milestone import Milestone
 from app.models.ritual import CoupleRitual, RitualInstance, RitualTemplate
 from app.models.user import User
@@ -15,6 +17,8 @@ __all__ = [
     "CoupleInvite",
     "CoupleMember",
     "CoupleRitual",
+    "Letter",
+    "MemoryItem",
     "Milestone",
     "RitualInstance",
     "RitualTemplate",
