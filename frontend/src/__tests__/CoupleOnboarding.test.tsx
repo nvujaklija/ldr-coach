@@ -9,15 +9,16 @@ const couple = {
   members: [{ user_id: "1", display_name: "Alex", role: "partner" }],
 };
 
-const getMe = vi.fn();
-const createCouple = vi.fn(async () => couple);
+const getMe = vi.fn<(token: string) => Promise<unknown>>();
+const createCouple =
+  vi.fn<(token: string, name: string) => Promise<typeof couple>>(async () => couple);
 
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
   return {
     ...actual,
-    getMe: (...args: unknown[]) => getMe(...args),
-    createCouple: (...args: unknown[]) => createCouple(...args),
+    getMe: (token: string) => getMe(token),
+    createCouple: (token: string, name: string) => createCouple(token, name),
   };
 });
 

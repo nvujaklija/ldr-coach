@@ -1,22 +1,24 @@
 "use client";
 
-import RequireAuth from "@/components/RequireAuth";
+import PageHeader from "@/components/PageHeader";
 import SettingsForm from "@/components/SettingsForm";
-
-function Settings() {
-  return (
-    <main>
-      <h1>Settings</h1>
-      <p className="muted">Tune your preferences and what shows on your dashboard.</p>
-      <SettingsForm />
-    </main>
-  );
-}
+import { useAuth } from "@/lib/auth";
 
 export default function SettingsPage() {
+  const { logout } = useAuth();
   return (
-    <RequireAuth returnTo="/app/settings">
-      <Settings />
-    </RequireAuth>
+    <>
+      <PageHeader
+        title="Settings"
+        subtitle="Tune your preferences and what shows on your dashboard."
+      />
+      <SettingsForm />
+      <div className="card">
+        <h2>Account</h2>
+        <button type="button" className="ghost" onClick={logout}>
+          Sign out
+        </button>
+      </div>
+    </>
   );
 }
