@@ -33,19 +33,19 @@ def upgrade() -> None:
         batch_op.add_column(
             sa.Column(
                 "notify_checkin_reminders",
-                sa.Boolean(), nullable=False, server_default=sa.text("1"),
+                sa.Boolean(), nullable=False, server_default=sa.true(),
             )
         )
         batch_op.add_column(
             sa.Column(
                 "notify_visit_reminders",
-                sa.Boolean(), nullable=False, server_default=sa.text("1"),
+                sa.Boolean(), nullable=False, server_default=sa.true(),
             )
         )
         batch_op.add_column(
             sa.Column(
                 "notify_ritual_reminders",
-                sa.Boolean(), nullable=False, server_default=sa.text("1"),
+                sa.Boolean(), nullable=False, server_default=sa.true(),
             )
         )
         batch_op.alter_column("timezone", server_default=None)
@@ -58,13 +58,13 @@ def upgrade() -> None:
     with op.batch_alter_table("couples", schema=None) as batch_op:
         batch_op.add_column(sa.Column("relationship_start_date", sa.Date(), nullable=True))
         batch_op.add_column(
-            sa.Column("show_visits", sa.Boolean(), nullable=False, server_default=sa.text("1"))
+            sa.Column("show_visits", sa.Boolean(), nullable=False, server_default=sa.true())
         )
         batch_op.add_column(
-            sa.Column("show_rituals", sa.Boolean(), nullable=False, server_default=sa.text("1"))
+            sa.Column("show_rituals", sa.Boolean(), nullable=False, server_default=sa.true())
         )
         batch_op.add_column(
-            sa.Column("show_checkins", sa.Boolean(), nullable=False, server_default=sa.text("1"))
+            sa.Column("show_checkins", sa.Boolean(), nullable=False, server_default=sa.true())
         )
         batch_op.alter_column("show_visits", server_default=None)
         batch_op.alter_column("show_rituals", server_default=None)
