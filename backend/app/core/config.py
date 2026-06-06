@@ -32,6 +32,16 @@ class Settings(BaseSettings):
     # shareable invite link returned to the first partner.
     FRONTEND_URL: str = "http://localhost:3000"
 
+    # BeReal — uploaded photos live here and are served under {API_PREFIX}/media.
+    UPLOAD_DIR: str = "uploads"
+    # How long after a moment fires partners may still post.
+    BE_REAL_POST_WINDOW_MINUTES: int = 120
+    # Largest accepted photo upload, in bytes (default 10 MiB).
+    BE_REAL_MAX_UPLOAD_BYTES: int = 10 * 1024 * 1024
+
+    # Notifications — keep email off unless a provider is wired up.
+    EMAIL_ENABLED: bool = False
+
     # CORS — comma-separated list of allowed origins. NoDecode stops
     # pydantic-settings from JSON-parsing the env value so the validator
     # below can split a plain "a,b,c" string.
