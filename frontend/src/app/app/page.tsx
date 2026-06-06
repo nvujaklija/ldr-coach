@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import CheckInCard from "@/components/CheckInCard";
 import CoupleOnboarding from "@/components/CoupleOnboarding";
 import NextVisitWidget from "@/components/NextVisitWidget";
@@ -22,6 +23,12 @@ function Dashboard() {
       {me?.couple && <NextVisitWidget />}
       {/* Rituals are couple-scoped too. */}
       {me?.couple && <RitualsSection />}
+      {me?.couple && (
+        <nav className="links">
+          <Link href="/app/bereal">BeReal moments</Link>
+          <Link href="/app/settings">Settings</Link>
+        </nav>
+      )}
       <button type="button" onClick={logout}>
         Sign out
       </button>
