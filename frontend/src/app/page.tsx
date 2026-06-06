@@ -8,10 +8,11 @@ export default function HomePage() {
   const { token, loading } = useAuth();
   return (
     <main>
-      <h1>LDR Coach</h1>
+      <h1>💕 LDR Coach</h1>
       <p>
         Your shared space for staying close across the distance. Create an
-        account, pair up with your partner, and start building rituals together.
+        account, pair up with your partner, and build rituals, plan visits, and
+        keep a bucket list together.
       </p>
       <p>
         {loading ? null : token ? (

@@ -1,7 +1,7 @@
 // Thin API client. The base URL comes from the environment so the same
 // build works across deploys (12-factor). In the browser, requests go to
-// the reverse proxy at /api by default.
-export const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "/api";
+// the reverse proxy at /api/v1 by default (the versioned API prefix).
+export const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "/api/v1";
 
 export interface HealthResponse {
   status: string;
@@ -420,4 +420,215 @@ export async function listBeRealMoments(
 
 export async function getBeRealMoment(token: string, id: string): Promise<BeRealMoment> {
   return request<BeRealMoment>(`/be-real/moments/${id}`, { token });
+}
+
+// --- settings ------------------------------------------------------------
+export type Theme = "system" | "light" | "dark";
+
+export interface UserSettings {
+  timezone: string; // IANA
+  theme: Theme;
+  notify_checkin_reminders: boolean;
+  notify_visit_reminders: boolean;
+  notify_ritual_reminders: boolean;
+}
+
+export interface CoupleSettings {
+  relationship_start_date: string | null; // ISO date (YYYY-MM-DD)
+  show_visits: boolean;
+  show_rituals: boolean;
+  show_checkins: boolean;
+}
+
+export interface Settings {
+  user: UserSettings;
+  couple: CoupleSettings | null;
+}
+
+export interface SettingsUpdate {
+  user?: Partial<UserSettings>;
+  couple?: Partial<CoupleSettings>;
+}
+
+export async function getSettings(token: string): Promise<Settings> {
+  return request<Settings>("/settings", { token });
+}
+
+export async function updateSettings(
+  token: string,
+  patch: SettingsUpdate,
+): Promise<Settings> {
+  return request<Settings>("/settings", { method: "PUT", token, json: patch });
+}
+
+// --- notifications -------------------------------------------------------
+export type NotificationType = "visit_reminder" | "ritual_reminder";
+
+export interface AppNotification {
+  id: string;
+  type: string;
+  title: string;
+  body: string | null;
+  payload: Record<string, unknown>;
+  trigger_at: string; // ISO datetime (UTC)
+  read_at: string | null;
+  created_at: string;
+}
+
+export interface NotificationList {
+  notifications: AppNotification[];
+  unread_count: number;
+}
+
+export interface NotificationPreferences {
+  visit_reminder_days: number;
+  visit_reminders_enabled: boolean;
+  ritual_reminders_enabled: boolean;
+  in_app_enabled: boolean;
+  email_enabled: boolean;
+}
+
+export async function listNotifications(
+  token: string,
+  includeRead = false,
+): Promise<NotificationList> {
+  const query = includeRead ? "?include_read=true" : "";
+  return request<NotificationList>(`/notifications${query}`, { token });
+}
+
+export async function markNotificationRead(
+  token: string,
+  id: string,
+): Promise<AppNotification> {
+  return request<AppNotification>(`/notifications/${id}/read`, { method: "POST", token });
+}
+
+export async function markAllNotificationsRead(token: string): Promise<NotificationList> {
+  return request<NotificationList>("/notifications/read-all", { method: "POST", token });
+}
+
+export async function getNotificationPreferences(
+  token: string,
+): Promise<NotificationPreferences> {
+  return request<NotificationPreferences>("/notifications/preferences", { token });
+}
+
+export async function updateNotificationPreferences(
+  token: string,
+  patch: Partial<NotificationPreferences>,
+): Promise<NotificationPreferences> {
+  return request<NotificationPreferences>("/notifications/preferences", {
+    method: "PATCH",
+    token,
+    json: patch,
+  });
+}
+
+// --- letters -------------------------------------------------------------
+export type LetterBox = "inbox" | "sent";
+
+export interface Letter {
+  id: string;
+  couple_id: string;
+  from_user_id: string;
+  to_user_id: string;
+  from_name: string;
+  to_name: string;
+  title: string;
+  body: string | null; // null while a received letter is still locked
+  visible_from: string; // ISO datetime (UTC)
+  is_opened: boolean;
+  is_locked: boolean;
+  direction: "sent" | "received";
+  created_at: string;
+}
+
+export interface LetterInput {
+  title: string;
+  body: string;
+  visible_from?: string | null; // ISO datetime; omit/past = unlocked now
+  to_user_id?: string | null;
+}
+
+export async function listLetters(
+  token: string,
+  box: LetterBox = "inbox",
+): Promise<Letter[]> {
+  return request<Letter[]>(`/letters?box=${box}`, { token });
+}
+
+export async function createLetter(
+  token: string,
+  input: LetterInput,
+): Promise<Letter> {
+  return request<Letter>("/letters", { method: "POST", token, json: input });
+}
+
+export async function openLetter(token: string, id: string): Promise<Letter> {
+  return request<Letter>(`/letters/${id}/open`, { method: "POST", token });
+}
+
+// --- memories ------------------------------------------------------------
+export type MemoryType = "photo" | "note" | "ritual" | "visit";
+
+export interface MemoryItem {
+  id: string;
+  type: MemoryType;
+  data: Record<string, unknown> & { title?: string; source?: string };
+  created_by_id: string | null;
+  created_at: string;
+}
+
+export async function listMemories(
+  token: string,
+  limit = 20,
+  offset = 0,
+): Promise<MemoryItem[]> {
+  return request<MemoryItem[]>(`/memories?limit=${limit}&offset=${offset}`, { token });
+}
+
+export async function createMemory(
+  token: string,
+  type: MemoryType,
+  data: Record<string, unknown>,
+): Promise<MemoryItem> {
+  return request<MemoryItem>("/memories", { method: "POST", token, json: { type, data } });
+}
+
+// --- bucket list ---------------------------------------------------------
+export type BucketStatus = "planned" | "in_progress" | "done";
+
+export interface BucketItem {
+  id: string;
+  title: string;
+  category: string | null;
+  target_visit_id: string | null;
+  status: BucketStatus;
+  notes: string | null;
+}
+
+export interface BucketItemInput {
+  title: string;
+  category?: string | null;
+  target_visit_id?: string | null;
+  notes?: string | null;
+}
+
+export async function listBucketItems(token: string): Promise<BucketItem[]> {
+  return request<BucketItem[]>("/bucket-items", { token });
+}
+
+export async function createBucketItem(
+  token: string,
+  input: BucketItemInput,
+): Promise<BucketItem> {
+  return request<BucketItem>("/bucket-items", { method: "POST", token, json: input });
+}
+
+export async function updateBucketItem(
+  token: string,
+  id: string,
+  patch: Partial<BucketItemInput & { status: BucketStatus }>,
+): Promise<BucketItem> {
+  return request<BucketItem>(`/bucket-items/${id}`, { method: "PATCH", token, json: patch });
 }

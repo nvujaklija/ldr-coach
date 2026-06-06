@@ -6,9 +6,9 @@ two foreign keys on the couple. A CoupleInvite is a single-use, expiring
 code the first partner shares so the second partner can join the couple.
 """
 
-from datetime import datetime
+from datetime import date, datetime
 
-from sqlalchemy import DateTime, ForeignKey, String
+from sqlalchemy import Boolean, Date, DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base, TimestampMixin, UUIDMixin
@@ -18,6 +18,16 @@ class Couple(UUIDMixin, TimestampMixin, Base):
     __tablename__ = "couples"
 
     name: Mapped[str] = mapped_column(String(120), nullable=False)
+
+    # --- shared settings -------------------------------------------------
+    # When the couple's relationship began; drives the "together for N days"
+    # widget. Null until a partner fills it in.
+    relationship_start_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    # Module visibility — which dashboard sections the couple wants to see.
+    # Lets a couple hide features they don't use (visits, rituals, check-ins).
+    show_visits: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    show_rituals: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    show_checkins: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
 
 class CoupleMember(UUIDMixin, TimestampMixin, Base):
@@ -49,6 +59,4 @@ class CoupleInvite(UUIDMixin, TimestampMixin, Base):
     accepted_by_id: Mapped[str | None] = mapped_column(
         ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
-    accepted_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    accepted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

@@ -1,22 +1,26 @@
 "use client";
 
 import BeRealToggle from "@/components/BeRealToggle";
-import RequireAuth from "@/components/RequireAuth";
-
-function Settings() {
-  return (
-    <main>
-      <h1>Settings</h1>
-      <p className="muted">Tune how you and your partner stay connected.</p>
-      <BeRealToggle />
-    </main>
-  );
-}
+import PageHeader from "@/components/PageHeader";
+import SettingsForm from "@/components/SettingsForm";
+import { useAuth } from "@/lib/auth";
 
 export default function SettingsPage() {
+  const { me, logout } = useAuth();
   return (
-    <RequireAuth returnTo="/app/settings">
-      <Settings />
-    </RequireAuth>
+    <>
+      <PageHeader
+        title="Settings"
+        subtitle="Tune your preferences and what shows on your dashboard."
+      />
+      <SettingsForm />
+      {me?.couple && <BeRealToggle />}
+      <div className="card">
+        <h2>Account</h2>
+        <button type="button" className="ghost" onClick={logout}>
+          Sign out
+        </button>
+      </div>
+    </>
   );
 }

@@ -127,10 +127,7 @@ export default function RitualsSection() {
   }
 
   return (
-    <section>
-      <h3>Rituals</h3>
-      <p className="muted">Recurring virtual dates you share across the distance.</p>
-
+    <section className="card">
       {rituals.length === 0 ? (
         <p className="muted">No rituals yet — schedule your first shared date below.</p>
       ) : (

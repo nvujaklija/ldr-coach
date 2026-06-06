@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState, type ChangeEvent } from "react";
+import PageHeader from "@/components/PageHeader";
 import {
   getBeRealStatus,
   listBeRealMoments,
@@ -146,12 +147,11 @@ export default function BeRealView() {
   const history = past.filter((m) => m.status === "completed" && m.id !== moment?.id);
 
   return (
-    <main>
-      <h1>BeReal moments 📸</h1>
-      <p className="muted">
-        A surprise daily prompt to snap a photo at the same time as your partner — always
-        within both of your daytime hours.
-      </p>
+    <>
+      <PageHeader
+        title="BeReal moments 📸"
+        subtitle="A surprise daily prompt to snap a photo at the same time as your partner — always within both of your daytime hours."
+      />
 
       {!status.is_active && (
         <section className="card">
@@ -209,6 +209,6 @@ export default function BeRealView() {
           </ul>
         </section>
       )}
-    </main>
+    </>
   );
 }

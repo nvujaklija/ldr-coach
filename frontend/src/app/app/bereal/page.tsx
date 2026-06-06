@@ -1,12 +1,12 @@
 "use client";
 
 import BeRealView from "@/components/BeRealView";
-import RequireAuth from "@/components/RequireAuth";
+import NeedsCouple from "@/components/NeedsCouple";
 
 export default function BeRealPage() {
   return (
-    <RequireAuth returnTo="/app/bereal">
+    <NeedsCouple>
       <BeRealView />
-    </RequireAuth>
+    </NeedsCouple>
   );
 }
