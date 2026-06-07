@@ -54,5 +54,6 @@ def me(current_user: CurrentUser, db: DbSession) -> MeOut:
         id=current_user.id,
         email=current_user.email,
         display_name=current_user.display_name,
+        timezone=current_user.timezone,
         couple=couple_service.build_couple_out(db, couple) if couple else None,
     )

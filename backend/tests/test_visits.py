@@ -6,8 +6,8 @@ from fastapi.testclient import TestClient
 
 from tests.conftest import register_and_login
 
-VISITS = "/api/visits"
-NEXT = "/api/visits/next"
+VISITS = "/api/v1/visits"
+NEXT = "/api/v1/visits/next"
 
 
 def _future_visit(days: int = 30) -> dict[str, str]:
@@ -58,9 +58,7 @@ def test_completing_a_visit_frees_the_slot(client: TestClient, auth_headers: dic
     visit_id = client.post(VISITS, json=_future_visit(20), headers=auth_headers).json()["id"]
 
     # Mark it completed, then a new next visit can be created.
-    r = client.patch(
-        f"{VISITS}/{visit_id}", json={"status": "completed"}, headers=auth_headers
-    )
+    r = client.patch(f"{VISITS}/{visit_id}", json={"status": "completed"}, headers=auth_headers)
     assert r.status_code == 200
     assert r.json()["status"] == "completed"
     assert client.get(NEXT, headers=auth_headers).json() is None
@@ -83,6 +81,7 @@ def test_visits_are_couple_scoped(client: TestClient, auth_headers: dict) -> Non
     other = register_and_login(client, "sam@example.com", "Sam")
     # A different couple sees no next visit and cannot patch the first couple's.
     assert client.get(NEXT, headers=other).json() is None
-    assert client.patch(
-        f"{VISITS}/{visit_id}", json={"location": "hacked"}, headers=other
-    ).status_code == 404
+    assert (
+        client.patch(f"{VISITS}/{visit_id}", json={"location": "hacked"}, headers=other).status_code
+        == 404
+    )

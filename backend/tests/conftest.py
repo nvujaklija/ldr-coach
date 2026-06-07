@@ -63,15 +63,15 @@ def register_and_login(
     require. Pass with_couple=False to exercise the not-onboarded path.
     """
     client.post(
-        "/api/auth/register",
+        "/api/v1/auth/register",
         json={"email": email, "password": "supersecret", "display_name": display_name},
     )
     token = client.post(
-        "/api/auth/login", data={"username": email, "password": "supersecret"}
+        "/api/v1/auth/login", data={"username": email, "password": "supersecret"}
     ).json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
     if with_couple:
-        client.post("/api/couples", json={"name": f"{display_name}'s couple"}, headers=headers)
+        client.post("/api/v1/couples", json={"name": f"{display_name}'s couple"}, headers=headers)
     return headers
 
 

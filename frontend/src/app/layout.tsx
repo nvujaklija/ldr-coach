@@ -8,14 +8,14 @@ const fraunces = Fraunces({
   subsets: ["latin"],
   display: "swap",
   axes: ["opsz"],
-  variable: "--font-display",
+  variable: "--font-fraunces",
 });
 
 const hanken = Hanken_Grotesk({
   subsets: ["latin"],
   display: "swap",
   weight: ["400", "500", "600", "700"],
-  variable: "--font-body",
+  variable: "--font-hanken",
 });
 
 export const metadata: Metadata = {

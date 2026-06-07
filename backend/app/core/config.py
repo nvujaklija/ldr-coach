@@ -16,7 +16,9 @@ class Settings(BaseSettings):
 
     # Runtime
     ENV: str = "development"
-    API_PREFIX: str = "/api"
+    # Versioned, stable API mount point. Nginx proxies all of /api/ to the
+    # backend, so bumping the version here is the only server-side change needed.
+    API_PREFIX: str = "/api/v1"
 
     # Database — overridden to Postgres in docker-compose
     DATABASE_URL: str = "sqlite:///./dev.db"
@@ -31,6 +33,25 @@ class Settings(BaseSettings):
     # Base URL the frontend serves the join page from; used to build the
     # shareable invite link returned to the first partner.
     FRONTEND_URL: str = "http://localhost:3000"
+
+    # BeReal — uploaded photos live here and are served under {API_PREFIX}/media.
+    UPLOAD_DIR: str = "uploads"
+    # How long after a moment fires partners may still post.
+    BE_REAL_POST_WINDOW_MINUTES: int = 120
+    # Largest accepted photo upload, in bytes (default 10 MiB).
+    BE_REAL_MAX_UPLOAD_BYTES: int = 10 * 1024 * 1024
+
+    # Notifications / reminders worker
+    # How often the worker scans for due reminders, in seconds.
+    NOTIFICATIONS_POLL_SECONDS: int = 60
+    # Default lead time for a "your visit is coming up" reminder; users can
+    # override this in their per-user preferences.
+    VISIT_REMINDER_DEFAULT_DAYS: int = 3
+    # Local wall-clock hour (in the relevant timezone) reminders fire at.
+    REMINDER_HOUR_LOCAL: int = 9
+    # Master switch for the (future) email channel. In-app always works; email
+    # delivery is additionally gated per-user by NotificationPreference.
+    EMAIL_ENABLED: bool = False
 
     # CORS — comma-separated list of allowed origins. NoDecode stops
     # pydantic-settings from JSON-parsing the env value so the validator

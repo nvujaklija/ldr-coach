@@ -1,17 +1,28 @@
 """FastAPI application factory for the LDR Coach API."""
 
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app import __version__
 from app.api.routes import (
     auth,
+    be_real,
+    bucket,
     checkins,
     couples,
     health,
+    letters,
+    memories,
     milestones,
+    notifications,
     rituals,
     visits,
+)
+from app.api.routes import (
+    settings as settings_routes,
 )
 from app.core.config import settings
 from app.core.logging import configure_logging
@@ -42,6 +53,21 @@ def create_app() -> FastAPI:
     app.include_router(milestones.router, prefix=settings.API_PREFIX)
     app.include_router(checkins.router, prefix=settings.API_PREFIX)
     app.include_router(rituals.router, prefix=settings.API_PREFIX)
+    app.include_router(be_real.router, prefix=settings.API_PREFIX)
+    app.include_router(bucket.router, prefix=settings.API_PREFIX)
+    app.include_router(letters.router, prefix=settings.API_PREFIX)
+    app.include_router(memories.router, prefix=settings.API_PREFIX)
+    app.include_router(notifications.router, prefix=settings.API_PREFIX)
+    app.include_router(settings_routes.router, prefix=settings.API_PREFIX)
+
+    # Serve uploaded BeReal photos. Created up front so the mount has a dir.
+    upload_dir = Path(settings.UPLOAD_DIR)
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    app.mount(
+        f"{settings.API_PREFIX}/media",
+        StaticFiles(directory=upload_dir),
+        name="media",
+    )
 
     return app
 

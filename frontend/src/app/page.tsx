@@ -16,10 +16,10 @@ export default function HomePage() {
         <br />
         <em>across the distance.</em>
       </h1>
-      <p style={{ fontSize: "1.1rem", maxWidth: "46ch" }}>
+      <p style={{ fontSize: "1.1rem", maxWidth: "48ch" }}>
         LDR Coach is your shared space for the miles in between — count down to
-        the next visit, check in on each other daily, and keep your rituals
-        alive no matter the time zone.
+        the next visit, check in on each other daily, and keep your rituals,
+        letters, and bucket list alive no matter the time zone.
       </p>
       <p style={{ marginTop: "1.75rem" }}>
         {loading ? null : token ? (

@@ -6,8 +6,8 @@ from fastapi.testclient import TestClient
 
 from tests.conftest import register_and_login
 
-VISITS = "/api/visits"
-MILESTONES = "/api/milestones"
+VISITS = "/api/v1/visits"
+MILESTONES = "/api/v1/milestones"
 
 
 def _make_visit(client: TestClient, headers: dict) -> str:
@@ -37,9 +37,7 @@ def test_create_list_and_filter_by_visit(client: TestClient, auth_headers: dict)
     # A couple-level milestone (no visit) should not appear in the visit filter.
     client.post(MILESTONES, json={"title": "renew passport"}, headers=auth_headers)
 
-    filtered = client.get(
-        MILESTONES, params={"visitId": visit_id}, headers=auth_headers
-    ).json()
+    filtered = client.get(MILESTONES, params={"visitId": visit_id}, headers=auth_headers).json()
     assert [m["title"] for m in filtered] == ["book flights"]
 
     assert len(client.get(MILESTONES, headers=auth_headers).json()) == 2
@@ -58,9 +56,12 @@ def test_update_status_to_done(client: TestClient, auth_headers: dict) -> None:
 
 def test_invalid_status_rejected(client: TestClient, auth_headers: dict) -> None:
     mid = client.post(MILESTONES, json={"title": "x"}, headers=auth_headers).json()["id"]
-    assert client.patch(
-        f"{MILESTONES}/{mid}", json={"status": "bogus"}, headers=auth_headers
-    ).status_code == 422
+    assert (
+        client.patch(
+            f"{MILESTONES}/{mid}", json={"status": "bogus"}, headers=auth_headers
+        ).status_code
+        == 422
+    )
 
 
 def test_cannot_attach_milestone_to_another_couples_visit(
@@ -68,7 +69,5 @@ def test_cannot_attach_milestone_to_another_couples_visit(
 ) -> None:
     visit_id = _make_visit(client, auth_headers)
     other = register_and_login(client, "sam@example.com", "Sam")
-    r = client.post(
-        MILESTONES, json={"title": "sneaky", "visit_id": visit_id}, headers=other
-    )
+    r = client.post(MILESTONES, json={"title": "sneaky", "visit_id": visit_id}, headers=other)
     assert r.status_code == 404

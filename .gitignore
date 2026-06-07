@@ -171,3 +171,9 @@ htmlcov/
 # Local SQLite dev databases
 *.db
 *.sqlite3
+
+# Local Python virtualenvs
+.venv-win/
+
+# Uploaded BeReal photos (local/dev)
+backend/uploads/
