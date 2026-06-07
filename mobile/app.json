@@ -1,0 +1,78 @@
+{
+  "expo": {
+    "name": "LDR Coach",
+    "slug": "ldr-coach",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "ldrcoach",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "ios": {
+      "icon": "./assets/expo.icon",
+      "supportsTablet": true,
+      "bundleIdentifier": "com.nvujaklija.ldrcoach",
+      "buildNumber": "1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSCameraUsageDescription": "LDR Coach uses the camera so you can share your daily BeReal moment with your partner.",
+        "NSPhotoLibraryUsageDescription": "LDR Coach needs photo access so you can add memories and share moments."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0b0c1a",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "package": "com.nvujaklija.ldrcoach",
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0b0c1a",
+          "android": {
+            "image": "./assets/images/splash-icon.png",
+            "imageWidth": 76
+          }
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "LDR Coach uses the camera so you can share your daily BeReal moment.",
+          "photosPermission": "LDR Coach needs photo access so you can add memories."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#ff7a8a"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "extra": {
+      "apiBaseUrl": "http://localhost:8000/api/v1",
+      "ios": {
+        "bundleIdentifier": "com.nvujaklija.ldrcoach"
+      },
+      "eas": {
+        "projectId": "YOUR_EAS_PROJECT_ID"
+      }
+    },
+    "owner": "YOUR_EXPO_USERNAME"
+  }
+}
