@@ -17,7 +17,8 @@ class User(UUIDMixin, TimestampMixin, Base):
     display_name: Mapped[str] = mapped_column(String(100), nullable=False)
 
     # --- preferences -----------------------------------------------------
-    # IANA timezone used to render times across the app (e.g. "Europe/Rome").
+    # IANA timezone used to render times across the app (e.g. "Europe/Rome");
+    # also drives the BeReal daytime overlap.
     timezone: Mapped[str] = mapped_column(String(64), default="UTC", nullable=False)
     # Display option for the app shell; one of USER_THEMES.
     theme: Mapped[str] = mapped_column(String(20), default="system", nullable=False)

@@ -12,6 +12,7 @@ import { applyTheme } from "@/lib/theme";
 export const NAV_ITEMS = [
   { href: "/app", label: "Home", icon: "🏡" },
   { href: "/app/rituals", label: "Rituals", icon: "🕯️" },
+  { href: "/app/bereal", label: "BeReal", icon: "🤳" },
   { href: "/app/letters", label: "Letters", icon: "✉️" },
   { href: "/app/memories", label: "Memories", icon: "📸" },
   { href: "/app/bucket-list", label: "Bucket List", icon: "✨" },

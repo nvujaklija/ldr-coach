@@ -1,5 +1,6 @@
 """ORM models. Importing this package registers every table on Base.metadata."""
 
+from app.models.be_real import BeRealMoment, BeRealPost, BeRealSchedule
 from app.models.bucket_item import BucketItem
 from app.models.check_in import CheckIn
 from app.models.couple import Couple, CoupleInvite, CoupleMember
@@ -12,6 +13,9 @@ from app.models.user import User
 from app.models.visit import Visit
 
 __all__ = [
+    "BeRealMoment",
+    "BeRealPost",
+    "BeRealSchedule",
     "BucketItem",
     "CheckIn",
     "Couple",

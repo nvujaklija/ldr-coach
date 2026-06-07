@@ -9,6 +9,7 @@ candidate carries a stable ``dedup_key`` so the worker can run on every poll
 without producing duplicates.
 """
 
+import logging
 from datetime import UTC, date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
@@ -24,6 +25,8 @@ from app.models import (
     Visit,
 )
 from app.services import rituals as ritual_service
+
+logger = logging.getLogger("app.notifications")
 
 # --- preferences ---------------------------------------------------------
 
@@ -204,3 +207,21 @@ def generate(db: Session, now: datetime | None = None) -> int:
     created = generate_visit_reminders(db, now) + generate_ritual_reminders(db, now)
     db.commit()
     return created
+
+
+# --- BeReal moments ------------------------------------------------------
+
+
+def notify_moment_scheduled(recipient_emails: list[str], scheduled_utc_iso: str) -> None:
+    """Tell both partners a BeReal moment is queued.
+
+    ``recipient_emails`` is the couple's two addresses; ``scheduled_utc_iso`` is
+    the moment's instant. In-app delivery is implicit (the moment row is the
+    notification, surfaced by polling ``/be-real/status``); email is sent only
+    when explicitly enabled.
+    """
+    for email in recipient_emails:
+        logger.info("bereal.notify in_app email=%s scheduled=%s", email, scheduled_utc_iso)
+        if settings.EMAIL_ENABLED:
+            # Placeholder for a real provider; logged so it's observable in dev.
+            logger.info("bereal.notify email_send to=%s scheduled=%s", email, scheduled_utc_iso)

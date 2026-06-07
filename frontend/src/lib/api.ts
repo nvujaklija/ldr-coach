@@ -11,6 +11,7 @@ export interface User {
   id: string;
   email: string;
   display_name: string;
+  timezone: string;
 }
 
 export interface Member {
@@ -72,6 +73,8 @@ interface RequestOptions {
   token?: string;
   json?: unknown;
   form?: Record<string, string>;
+  // Multipart payload (file uploads). The browser sets the boundary header.
+  formData?: FormData;
 }
 
 async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
@@ -84,6 +87,9 @@ async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
   } else if (opts.form) {
     headers["Content-Type"] = "application/x-www-form-urlencoded";
     body = new URLSearchParams(opts.form).toString();
+  } else if (opts.formData) {
+    // Intentionally no Content-Type: fetch adds the multipart boundary.
+    body = opts.formData;
   }
   if (opts.token) {
     headers["Authorization"] = `Bearer ${opts.token}`;
@@ -329,6 +335,91 @@ export async function updateRitualInstance(
     token,
     json: { status },
   });
+}
+
+// --- be-real -------------------------------------------------------------
+export type BeRealMomentStatus = "waiting" | "completed" | "expired";
+
+export interface BeRealPost {
+  id: string;
+  user_id: string;
+  image_url: string;
+  posted_at: string; // ISO datetime (UTC)
+}
+
+export interface BeRealMoment {
+  id: string;
+  scheduled_utc: string; // ISO datetime (UTC)
+  status: BeRealMomentStatus;
+  is_open: boolean;
+  you_posted: boolean;
+  partner_posted: boolean;
+  posts: BeRealPost[]; // visibility-filtered by the backend
+}
+
+export interface BeRealPartnerTime {
+  user_id: string;
+  display_name: string;
+  timezone: string; // IANA
+  local_time: string | null; // next moment in this partner's tz, ISO
+}
+
+export interface BeRealStatus {
+  is_active: boolean;
+  next_utc: string | null;
+  current_moment: BeRealMoment | null;
+  partners: BeRealPartnerTime[];
+}
+
+export interface BeRealMomentList {
+  moments: BeRealMoment[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export async function getBeRealStatus(token: string): Promise<BeRealStatus> {
+  return request<BeRealStatus>("/be-real/status", { token });
+}
+
+export async function enableBeReal(token: string, timezone?: string): Promise<BeRealStatus> {
+  return request<BeRealStatus>("/be-real/enable", {
+    method: "POST",
+    token,
+    json: { timezone: timezone ?? null },
+  });
+}
+
+export async function disableBeReal(token: string): Promise<BeRealStatus> {
+  return request<BeRealStatus>("/be-real/disable", { method: "POST", token });
+}
+
+export async function postBeRealPhoto(
+  token: string,
+  momentId: string,
+  file: File,
+): Promise<BeRealMoment> {
+  const formData = new FormData();
+  formData.append("image", file);
+  return request<BeRealMoment>(`/be-real/moments/${momentId}/post`, {
+    method: "POST",
+    token,
+    formData,
+  });
+}
+
+export async function listBeRealMoments(
+  token: string,
+  limit = 20,
+  offset = 0,
+): Promise<BeRealMomentList> {
+  return request<BeRealMomentList>(`/be-real/moments?limit=${limit}&offset=${offset}`, {
+    token,
+  });
+}
+
+export async function getBeRealMoment(token: string, id: string): Promise<BeRealMoment> {
+  return request<BeRealMoment>(`/be-real/moments/${id}`, { token });
 }
 
 // --- settings ------------------------------------------------------------

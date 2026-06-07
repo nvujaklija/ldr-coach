@@ -27,6 +27,7 @@ class UserOut(BaseModel):
     id: str
     email: EmailStr
     display_name: str
+    timezone: str
 
 
 class MeOut(UserOut):
