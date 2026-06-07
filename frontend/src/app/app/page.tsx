@@ -11,7 +11,12 @@ function Dashboard() {
   const { me, logout } = useAuth();
   return (
     <main>
-      <h1>Hi {me?.display_name} 👋</h1>
+      <p className="muted" style={{ letterSpacing: "0.22em", textTransform: "uppercase", fontSize: "0.75rem" }}>
+        Your shared sky
+      </p>
+      <h1>
+        Hi <em>{me?.display_name}</em>
+      </h1>
       <p className="muted">
         Your shared space for staying close across the distance.
       </p>
@@ -22,7 +27,7 @@ function Dashboard() {
       {me?.couple && <NextVisitWidget />}
       {/* Rituals are couple-scoped too. */}
       {me?.couple && <RitualsSection />}
-      <button type="button" onClick={logout}>
+      <button type="button" className="ghost" onClick={logout}>
         Sign out
       </button>
     </main>
