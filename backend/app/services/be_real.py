@@ -109,9 +109,7 @@ def _member_emails(db: Session, couple_id: str) -> list[str]:
 
 
 def get_or_create_schedule(db: Session, couple_id: str) -> BeRealSchedule:
-    schedule = db.scalar(
-        select(BeRealSchedule).where(BeRealSchedule.couple_id == couple_id)
-    )
+    schedule = db.scalar(select(BeRealSchedule).where(BeRealSchedule.couple_id == couple_id))
     if schedule is None:
         schedule = BeRealSchedule(couple_id=couple_id, is_active=False)
         db.add(schedule)

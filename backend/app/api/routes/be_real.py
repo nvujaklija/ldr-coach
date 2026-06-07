@@ -105,9 +105,7 @@ def _build_status(db: DbSession, couple: Couple, viewer_id: str) -> BeRealStatus
     return BeRealStatusOut(
         is_active=schedule.is_active,
         next_utc=schedule.next_utc,
-        current_moment=(
-            _serialize_moment(db, moment, viewer_id) if moment is not None else None
-        ),
+        current_moment=(_serialize_moment(db, moment, viewer_id) if moment is not None else None),
         partners=partners,
     )
 

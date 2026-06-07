@@ -17,7 +17,7 @@ from app.services.be_real import (
 )
 from tests.conftest import register_and_login
 
-BASE = "/api/be-real"
+BASE = "/api/v1/be-real"
 
 
 def _in_daytime(instant: datetime, tz_name: str) -> bool:
@@ -134,9 +134,9 @@ def test_disable_clears_schedule(client: TestClient, auth_headers: dict) -> None
 def test_status_reports_both_partner_timezones(client: TestClient, db: Session) -> None:
     a = register_and_login(client, "a@example.com", "A")
     client.post(f"{BASE}/enable", json={"timezone": "America/New_York"}, headers=a)
-    code = client.post("/api/couples/invites", headers=a).json()["code"]
+    code = client.post("/api/v1/couples/invites", headers=a).json()["code"]
     b = register_and_login(client, "b@example.com", "B", with_couple=False)
-    client.post("/api/couples/join", json={"code": code}, headers=b)
+    client.post("/api/v1/couples/join", json={"code": code}, headers=b)
     client.post(f"{BASE}/enable", json={"timezone": "Europe/Rome"}, headers=b)
 
     body = client.get(f"{BASE}/status", headers=a).json()
@@ -149,10 +149,10 @@ def test_status_reports_both_partner_timezones(client: TestClient, db: Session) 
 
 def _two_member_couple(client: TestClient) -> tuple[dict, dict, str]:
     a = register_and_login(client, "a@example.com", "A")
-    couple_id = client.get("/api/auth/me", headers=a).json()["couple"]["id"]
-    code = client.post("/api/couples/invites", headers=a).json()["code"]
+    couple_id = client.get("/api/v1/auth/me", headers=a).json()["couple"]["id"]
+    code = client.post("/api/v1/couples/invites", headers=a).json()["code"]
     b = register_and_login(client, "b@example.com", "B", with_couple=False)
-    client.post("/api/couples/join", json={"code": code}, headers=b)
+    client.post("/api/v1/couples/join", json={"code": code}, headers=b)
     return a, b, couple_id
 
 
@@ -220,7 +220,7 @@ def test_post_photo_rejects_double_and_bad_type(
     # Non-image upload is rejected.
     bad = {"image": ("notes.txt", b"hello", "text/plain")}
     a2 = register_and_login(client, "c@example.com", "C")  # fresh couple to avoid double-post
-    cid = client.get("/api/auth/me", headers=a2).json()["couple"]["id"]
+    cid = client.get("/api/v1/auth/me", headers=a2).json()["couple"]["id"]
     other_moment = _open_moment(db, cid)
     assert _post(client, other_moment.id, a2, files=bad) == 415
 
@@ -243,7 +243,7 @@ def test_post_photo_closed_moment_rejected(
 
 
 def test_moments_pagination(client: TestClient, db: Session, auth_headers: dict) -> None:
-    couple_id = client.get("/api/auth/me", headers=auth_headers).json()["couple"]["id"]
+    couple_id = client.get("/api/v1/auth/me", headers=auth_headers).json()["couple"]["id"]
     base = datetime(2026, 6, 1, 12, tzinfo=UTC)
     for i in range(5):
         db.add(
@@ -265,7 +265,7 @@ def test_moments_pagination(client: TestClient, db: Session, auth_headers: dict)
 
 
 def test_couple_isolation(client: TestClient, db: Session, auth_headers: dict) -> None:
-    couple_id = client.get("/api/auth/me", headers=auth_headers).json()["couple"]["id"]
+    couple_id = client.get("/api/v1/auth/me", headers=auth_headers).json()["couple"]["id"]
     moment = _open_moment(db, couple_id)
     other = register_and_login(client, "z@example.com", "Z")
     assert client.get(f"{BASE}/moments/{moment.id}", headers=other).status_code == 404
