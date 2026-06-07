@@ -27,7 +27,7 @@ Everything the web app does, as native screens:
 
 ## Tech
 
-- Expo SDK 56 (React Native 0.85, React 19), TypeScript, New Architecture.
+- Expo SDK 54 (React Native 0.81, React 19), TypeScript, New Architecture.
 - `expo-router` for file-based navigation (`src/app`).
 - `expo-secure-store`, `expo-notifications`, `expo-image-picker`,
   `expo-linear-gradient`, `expo-image`.
