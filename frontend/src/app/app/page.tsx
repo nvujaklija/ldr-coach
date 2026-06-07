@@ -38,7 +38,7 @@ export default function HomePage() {
   return (
     <>
       <header className="page-header">
-        <h1>Hi {me?.display_name} 👋</h1>
+        <h1>Hi <em>{me?.display_name}</em> 👋</h1>
         <p>Your shared space for staying close across the distance.</p>
         {together !== null && (
           <p className="muted">

@@ -36,7 +36,7 @@ export default function RegisterPage() {
 
   return (
     <main>
-      <h1>Create your account</h1>
+      <h1>Create your <em>account</em></h1>
       <form onSubmit={onSubmit} className="card">
         <div className="field">
           <label htmlFor="name">Your name</label>
